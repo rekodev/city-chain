@@ -1,11 +1,14 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Toaster } from '../components/ui/sonner'
-import { TooltipProvider } from '../components/ui/tooltip'
+import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '../components/ui/sonner';
+import { TooltipProvider } from '../components/ui/tooltip';
+import { GameStatusProvider, useGameStatus } from '../context/gameStatus';
 
-import appCss from '../styles.css?url'
+import appCss from '../styles.css?url';
+import Header from '#/components/Header';
+import Footer from '#/components/Footer';
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient();
 
 function NotFound() {
   return (
@@ -16,7 +19,7 @@ function NotFound() {
         Go home
       </a>
     </div>
-  )
+  );
 }
 
 export const Route = createRootRoute({
@@ -24,13 +27,25 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'City Chain' },
+      { title: 'City Chain' }
     ],
-    links: [{ rel: 'stylesheet', href: appCss }],
+    links: [{ rel: 'stylesheet', href: appCss }]
   }),
   notFoundComponent: NotFound,
-  shellComponent: RootDocument,
-})
+  shellComponent: RootDocument
+});
+
+function AppShell({ children }: { children: React.ReactNode }) {
+  const { isPlaying } = useGameStatus();
+  return (
+    <>
+      <Toaster />
+      {!isPlaying && <Header />}
+      <main className="mx-auto w-full max-w-7xl">{children}</main>
+      {!isPlaying && <Footer />}
+    </>
+  );
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
@@ -41,12 +56,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
-            <Toaster />
-            {children}
+            <GameStatusProvider>
+              <AppShell>{children}</AppShell>
+            </GameStatusProvider>
           </TooltipProvider>
         </QueryClientProvider>
         <Scripts />
       </body>
     </html>
-  )
+  );
 }

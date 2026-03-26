@@ -1,0 +1,37 @@
+name: Attach PR to Trello Cards
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse Trello card IDs and attach PR
+        env:
+          TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
+          TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # Extract card IDs from [ABC,DEF] pattern in title or body
+          COMBINED="$PR_TITLE $PR_BODY"
+          CARD_IDS=$(echo "$COMBINED" | grep -oP '(?<=\[)[A-Za-z0-9,\s]+(?=\])' | tr ',' '\n' | tr -d ' ' | grep -E '^[A-Za-z0-9]{8}$')
+
+          if [ -z "$CARD_IDS" ]; then
+            echo "No Trello card IDs found — skipping."
+            exit 0
+          fi
+
+          for CARD_ID in $CARD_IDS; do
+            echo "Attaching PR to card: $CARD_ID"
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+              "https://api.trello.com/1/cards/$CARD_ID/attachments" \
+              -d "key=$TRELLO_API_KEY" \
+              -d "token=$TRELLO_TOKEN" \
+              --data-urlencode "url=$PR_URL" \
+              --data-urlencode "name=$PR_TITLE")
+            echo "  → HTTP $STATUS"
+          done

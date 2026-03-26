@@ -8,79 +8,275 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as AboutRouteImport } from "./routes/about";
-import { Route as IndexRouteImport } from "./routes/index";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlayIndexRouteImport } from './routes/play/index'
+import { Route as PlayPracticeRouteImport } from './routes/play/practice'
+import { Route as PlayOnlineRouteImport } from './routes/play/online'
+import { Route as PlayLocalRouteImport } from './routes/play/local'
+import { Route as PlayFriendRouteImport } from './routes/play/friend'
+import { Route as PlayBotsRouteImport } from './routes/play/bots'
 
-const AboutRoute = AboutRouteImport.update({
-  id: "/about",
-  path: "/about",
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
+const PlayIndexRoute = PlayIndexRouteImport.update({
+  id: '/play/',
+  path: '/play/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayPracticeRoute = PlayPracticeRouteImport.update({
+  id: '/play/practice',
+  path: '/play/practice',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayOnlineRoute = PlayOnlineRouteImport.update({
+  id: '/play/online',
+  path: '/play/online',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayLocalRoute = PlayLocalRouteImport.update({
+  id: '/play/local',
+  path: '/play/local',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayFriendRoute = PlayFriendRouteImport.update({
+  id: '/play/friend',
+  path: '/play/friend',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayBotsRoute = PlayBotsRouteImport.update({
+  id: '/play/bots',
+  path: '/play/bots',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/about": typeof AboutRoute;
+  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
+  '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
+  '/play/bots': typeof PlayBotsRoute
+  '/play/friend': typeof PlayFriendRoute
+  '/play/local': typeof PlayLocalRoute
+  '/play/online': typeof PlayOnlineRoute
+  '/play/practice': typeof PlayPracticeRoute
+  '/play/': typeof PlayIndexRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/about": typeof AboutRoute;
+  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
+  '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
+  '/play/bots': typeof PlayBotsRoute
+  '/play/friend': typeof PlayFriendRoute
+  '/play/local': typeof PlayLocalRoute
+  '/play/online': typeof PlayOnlineRoute
+  '/play/practice': typeof PlayPracticeRoute
+  '/play': typeof PlayIndexRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/about": typeof AboutRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
+  '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
+  '/play/bots': typeof PlayBotsRoute
+  '/play/friend': typeof PlayFriendRoute
+  '/play/local': typeof PlayLocalRoute
+  '/play/online': typeof PlayOnlineRoute
+  '/play/practice': typeof PlayPracticeRoute
+  '/play/': typeof PlayIndexRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/about";
-  fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/about";
-  id: "__root__" | "/" | "/about";
-  fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/privacy'
+    | '/signup'
+    | '/terms'
+    | '/play/bots'
+    | '/play/friend'
+    | '/play/local'
+    | '/play/online'
+    | '/play/practice'
+    | '/play/'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/login'
+    | '/privacy'
+    | '/signup'
+    | '/terms'
+    | '/play/bots'
+    | '/play/friend'
+    | '/play/local'
+    | '/play/online'
+    | '/play/practice'
+    | '/play'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/privacy'
+    | '/signup'
+    | '/terms'
+    | '/play/bots'
+    | '/play/friend'
+    | '/play/local'
+    | '/play/online'
+    | '/play/practice'
+    | '/play/'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  AboutRoute: typeof AboutRoute;
+  IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
+  PrivacyRoute: typeof PrivacyRoute
+  SignupRoute: typeof SignupRoute
+  TermsRoute: typeof TermsRoute
+  PlayBotsRoute: typeof PlayBotsRoute
+  PlayFriendRoute: typeof PlayFriendRoute
+  PlayLocalRoute: typeof PlayLocalRoute
+  PlayOnlineRoute: typeof PlayOnlineRoute
+  PlayPracticeRoute: typeof PlayPracticeRoute
+  PlayIndexRoute: typeof PlayIndexRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/about": {
-      id: "/about";
-      path: "/about";
-      fullPath: "/about";
-      preLoaderRoute: typeof AboutRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/play/': {
+      id: '/play/'
+      path: '/play'
+      fullPath: '/play/'
+      preLoaderRoute: typeof PlayIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/play/practice': {
+      id: '/play/practice'
+      path: '/play/practice'
+      fullPath: '/play/practice'
+      preLoaderRoute: typeof PlayPracticeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/play/online': {
+      id: '/play/online'
+      path: '/play/online'
+      fullPath: '/play/online'
+      preLoaderRoute: typeof PlayOnlineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/play/local': {
+      id: '/play/local'
+      path: '/play/local'
+      fullPath: '/play/local'
+      preLoaderRoute: typeof PlayLocalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/play/friend': {
+      id: '/play/friend'
+      path: '/play/friend'
+      fullPath: '/play/friend'
+      preLoaderRoute: typeof PlayFriendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/play/bots': {
+      id: '/play/bots'
+      path: '/play/bots'
+      fullPath: '/play/bots'
+      preLoaderRoute: typeof PlayBotsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
-};
+  LoginRoute: LoginRoute,
+  PrivacyRoute: PrivacyRoute,
+  SignupRoute: SignupRoute,
+  TermsRoute: TermsRoute,
+  PlayBotsRoute: PlayBotsRoute,
+  PlayFriendRoute: PlayFriendRoute,
+  PlayLocalRoute: PlayLocalRoute,
+  PlayOnlineRoute: PlayOnlineRoute,
+  PlayPracticeRoute: PlayPracticeRoute,
+  PlayIndexRoute: PlayIndexRoute,
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from "./router.tsx";
-import type { createStart } from "@tanstack/react-start";
-declare module "@tanstack/react-start" {
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }

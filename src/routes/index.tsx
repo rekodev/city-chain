@@ -1,65 +1,29 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
-import { useGameState } from '@/hooks/useGameState'
-import WorldMap from '@/components/game/WorldMap'
-import PlayerCard from '@/components/game/PlayerCard'
-import CityInput from '@/components/game/CityInput'
-import ChainStrip from '@/components/game/ChainStrip'
-import GameOverScreen from '@/components/game/GameOverScreen'
-import StartScreen from '@/components/game/StartScreen'
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { Button } from '@/components/ui/button';
+import HomeMap from '@/components/HomeMap';
 
-export const Route = createFileRoute('/')({ component: Index })
+export const Route = createFileRoute('/')({ component: Home });
 
-function Index() {
-  const { state, submitCity, getRequiredLetter, startGame, rematch } = useGameState()
-  const [focusCity, setFocusCity] = useState<{ lat: number; lng: number } | null>(null)
-
-  const handlePillClick = (index: number) => {
-    const city = state.chain[index].city
-    setFocusCity({ lat: city.lat, lng: city.lng })
-    setTimeout(() => setFocusCity(null), 2000)
-  }
-
+function Home() {
   return (
-    <div className="min-h-screen overflow-hidden">
-      <WorldMap chain={state.chain} focusCity={focusCity} />
+    <div className="relative flex min-h-screen flex-col items-center justify-center px-4 pt-14 text-center">
+      <HomeMap />
 
-      {!state.started && <StartScreen onStart={startGame} />}
-
-      {state.started && !state.gameOver && (
-        <>
-          <PlayerCard
-            name={state.players[0]}
-            time={state.timers[0]}
-            isActive={state.currentPlayer === 0}
-            player={0}
-            position="left"
-          />
-          <PlayerCard
-            name={state.players[1]}
-            time={state.timers[1]}
-            isActive={state.currentPlayer === 1}
-            player={1}
-            position="right"
-          />
-          <CityInput
-            requiredLetter={getRequiredLetter()}
-            onSubmit={submitCity}
-            currentPlayer={state.currentPlayer}
-            playerName={state.players[state.currentPlayer]}
-          />
-          <ChainStrip chain={state.chain} onCityClick={handlePillClick} />
-        </>
-      )}
-
-      {state.gameOver && state.loser !== null && (
-        <GameOverScreen
-          loser={state.loser}
-          players={state.players}
-          chain={state.chain}
-          onRematch={rematch}
-        />
-      )}
+      <div className="relative z-20 w-full max-w-xl">
+        <div className="bg-background/50 rounded-2xl border border-white/10 px-8 py-10 shadow-2xl backdrop-blur-md">
+          <div className="mb-5 text-6xl">🔗</div>
+          <h1 className="text-foreground mb-4 text-5xl font-bold tracking-tight sm:text-6xl">
+            Play City Chain
+          </h1>
+          <p className="text-muted-foreground mb-8 text-base sm:text-lg">
+            Chain cities around the world, beat the clock, and conquer the map.
+            Challenge a friend, test your geography, or take on our AI.
+          </p>
+          <Button asChild size="lg" className="px-10 text-base font-bold">
+            <Link to="/play">Get Started</Link>
+          </Button>
+        </div>
+      </div>
     </div>
-  )
+  );
 }
