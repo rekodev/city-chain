@@ -2,7 +2,7 @@ name: Attach PR to Trello Cards
 
 on:
   pull_request:
-    types: [opened, edited, reopened]
+    types: [opened, edited, reopened, synchronize]
 
 jobs:
   attach:
