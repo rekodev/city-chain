@@ -3,6 +3,17 @@ name: Attach PR to Trello Cards
 on:
   pull_request:
     types: [opened, edited, reopened, synchronize]
+  workflow_dispatch:
+    inputs:
+      pr_url:
+        description: PR URL
+        required: true
+      pr_title:
+        description: PR title (include [CC-N] keys)
+        required: true
+      pr_body:
+        description: PR body
+        required: false
 
 jobs:
   attach:
@@ -10,43 +21,43 @@ jobs:
     steps:
       - name: Parse Trello card IDs and attach PR
         env:
-        env:
           TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
           TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
           TRELLO_BOARD_ID: ${{ secrets.TRELLO_BOARD_ID }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_URL: ${{ github.event.pull_request.html_url || github.event.inputs.pr_url }}
+          PR_TITLE: ${{ github.event.pull_request.title || github.event.inputs.pr_title }}
+          PR_BODY: ${{ github.event.pull_request.body || github.event.inputs.pr_body }}
         run: |
-          # Extract CC-N keys from [CC-1, CC-2] pattern in title or body
           COMBINED="$PR_TITLE $PR_BODY"
-          CC_KEYS=$(echo "$COMBINED" | grep -oP '(?<=\[)[^\]]+(?=\])' | tr ',' '\n' | tr -d ' ' | grep -E '^CC-[0-9]+$')
+          CC_KEYS=$(echo "$COMBINED" | grep -oP '(?<=\[)[^\]]+(?=\])' | tr ',' '\n' | tr -d ' ' | grep -E '^CC-[0-9]+$' || true)
 
           if [ -z "$CC_KEYS" ]; then
             echo "No CC-N keys found — skipping."
             exit 0
           fi
 
-          # Fetch all cards on the board once
-          BOARD_CARDS=$(curl -s \
-            "https://api.trello.com/1/boards/$TRELLO_BOARD_ID/cards?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN&fields=name,shortLink")
+          BOARD_CARDS=$(curl -s "https://api.trello.com/1/boards/$TRELLO_BOARD_ID/cards?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN&fields=name,shortLink")
+
+          cat > /tmp/find_card.py << 'EOF'
+          import sys, json, re
+          cards = json.load(sys.stdin)
+          key = sys.argv[1]
+          for c in cards:
+              if re.match(r'^' + re.escape(key) + r'(\b|:|$)', c['name']):
+                  print(c['shortLink'])
+                  break
+          EOF
+
+          cat > /tmp/check_attachment.py << 'EOF'
+          import sys, json
+          attachments = json.load(sys.stdin)
+          pr_url = sys.argv[1]
+          print('found' if any(a.get('url') == pr_url for a in attachments) else 'not_found')
+          EOF
 
           for KEY in $CC_KEYS; do
             echo "Looking up card for: $KEY"
-            SHORT_LINK=$(echo "$BOARD_CARDS" | grep -o "\"name\":\"${KEY}[^\"]*\".*\"shortLink\":\"[^\"]*\"" | grep -o '"shortLink":"[^"]*"' | grep -o '[^"]*$' | head -1)
-
-            if [ -z "$SHORT_LINK" ]; then
-              # Try matching key anywhere in the name (e.g. "CC-1: Some title")
-              SHORT_LINK=$(echo "$BOARD_CARDS" | python3 -c "
-import sys, json, re
-cards = json.load(sys.stdin)
-key = '${KEY}'
-for c in cards:
-    if re.match(r'^' + re.escape(key) + r'(\b|:|-)', c['name']):
-        print(c['shortLink'])
-        break
-" 2>/dev/null)
-            fi
+            SHORT_LINK=$(echo "$BOARD_CARDS" | python3 /tmp/find_card.py "$KEY" 2>/dev/null || true)
 
             if [ -z "$SHORT_LINK" ]; then
               echo "  → Card not found for $KEY, skipping"
@@ -54,6 +65,12 @@ for c in cards:
             fi
 
             echo "  → Found shortLink: $SHORT_LINK"
+            EXISTING=$(curl -s "https://api.trello.com/1/cards/$SHORT_LINK/attachments?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN" | python3 /tmp/check_attachment.py "$PR_URL" 2>/dev/null || echo "not_found")
+
+            if [ "$EXISTING" = "found" ]; then
+              echo "  → Already attached, skipping"
+              continue
+            fi
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
               "https://api.trello.com/1/cards/$SHORT_LINK/attachments" \
               -d "key=$TRELLO_API_KEY" \

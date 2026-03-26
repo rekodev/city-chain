@@ -1,55 +1,62 @@
-import { motion } from "framer-motion";
-import { type ChainEntry } from "@/hooks/useGameState";
+import { motion } from 'framer-motion';
+import { type ChainEntry, type GameOverReason } from '@/hooks/useGameState';
 
 interface GameOverScreenProps {
   loser: 0 | 1;
   players: [string, string];
   chain: ChainEntry[];
+  gameOverReason: GameOverReason | null;
   onRematch: () => void;
+  onExit: () => void;
 }
 
 export default function GameOverScreen({
   loser,
   players,
   chain,
+  gameOverReason,
   onRematch,
+  onExit
 }: GameOverScreenProps) {
   const winner = loser === 0 ? 1 : 0;
+  const gaveUp = gameOverReason === 'gaveUp';
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+      className="bg-background/80 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
     >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.2, type: "spring" }}
-        className="text-center max-w-md mx-4"
+        transition={{ delay: 0.2, type: 'spring' }}
+        className="mx-4 w-full max-w-md text-center"
       >
-        <div className="text-6xl mb-4">🏆</div>
+        <div className="mb-4 text-6xl">{gaveUp ? '🏳️' : '🏆'}</div>
         <h2
-          className={`text-3xl font-bold mb-2 ${winner === 0 ? "text-primary glow-amber-text" : "text-secondary glow-cyan-text"}`}
+          className={`mb-2 text-3xl font-bold ${winner === 0 ? 'text-primary glow-amber-text' : 'text-secondary glow-cyan-text'}`}
         >
           {players[winner]} Wins!
         </h2>
         <p className="text-muted-foreground mb-1">
-          {players[loser]} ran out of time
+          {gaveUp
+            ? `${players[loser]} gave up`
+            : `${players[loser]} ran out of time`}
         </p>
-        <p className="text-foreground font-mono text-lg mb-8">
-          Chain length:{" "}
+        <p className="text-foreground mb-8 font-mono text-lg">
+          Chain length:{' '}
           <span className="text-primary font-bold">{chain.length}</span> cities
         </p>
 
-        <div className="flex flex-wrap justify-center gap-2 mb-8 max-h-32 overflow-y-auto">
+        <div className="mb-8 flex max-h-32 flex-wrap justify-center gap-2 overflow-y-auto">
           {chain.map((entry, i) => (
             <span
               key={i}
-              className={`text-xs px-2 py-1 rounded-full ${
+              className={`rounded-full px-2 py-1 text-xs ${
                 entry.player === 0
-                  ? "bg-primary/20 text-primary"
-                  : "bg-secondary/20 text-secondary"
+                  ? 'bg-primary/20 text-primary'
+                  : 'bg-secondary/20 text-secondary'
               }`}
             >
               {entry.city.name}
@@ -57,12 +64,20 @@ export default function GameOverScreen({
           ))}
         </div>
 
-        <button
-          onClick={onRematch}
-          className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-lg hover:opacity-90 transition-all hover:scale-105"
-        >
-          Rematch
-        </button>
+        <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <button
+            onClick={onRematch}
+            className="bg-primary text-primary-foreground w-full rounded-xl px-8 py-3 text-lg font-bold transition-all hover:scale-105 hover:opacity-90 sm:w-auto"
+          >
+            Rematch
+          </button>
+          <button
+            onClick={onExit}
+            className="border-border/50 bg-card/60 text-muted-foreground hover:border-border hover:text-foreground w-full rounded-xl border px-8 py-3 text-lg font-semibold backdrop-blur-sm transition-all sm:w-auto"
+          >
+            Main Menu
+          </button>
+        </div>
       </motion.div>
     </motion.div>
   );

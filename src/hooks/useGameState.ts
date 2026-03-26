@@ -1,10 +1,12 @@
-import { useState, useCallback, useRef, useEffect } from "react";
-import { type CityData, findCity } from "@/data/cities";
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { type CityData, findCity } from '@/data/cities';
 
 export interface ChainEntry {
   city: CityData;
   player: 0 | 1;
 }
+
+export type GameOverReason = 'timeout' | 'gaveUp';
 
 export interface GameState {
   chain: ChainEntry[];
@@ -12,6 +14,7 @@ export interface GameState {
   timers: [number, number];
   gameOver: boolean;
   loser: 0 | 1 | null;
+  gameOverReason: GameOverReason | null;
   players: [string, string];
   started: boolean;
 }
@@ -25,8 +28,9 @@ export function useGameState() {
     timers: [TURN_TIME, TURN_TIME],
     gameOver: false,
     loser: null,
-    players: ["Player 1", "Player 2"],
-    started: false,
+    gameOverReason: null,
+    players: ['Player 1', 'Player 2'],
+    started: false
   });
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -46,7 +50,7 @@ export function useGameState() {
         const newTimers: [number, number] = [...prev.timers];
         newTimers[prev.currentPlayer] = Math.max(
           0,
-          newTimers[prev.currentPlayer] - 0.1,
+          newTimers[prev.currentPlayer] - 0.1
         );
         if (newTimers[prev.currentPlayer] <= 0) {
           return {
@@ -54,6 +58,7 @@ export function useGameState() {
             timers: newTimers,
             gameOver: true,
             loser: prev.currentPlayer,
+            gameOverReason: 'timeout'
           };
         }
         return { ...prev, timers: newTimers };
@@ -68,10 +73,10 @@ export function useGameState() {
       timers: [TURN_TIME, TURN_TIME],
       gameOver: false,
       loser: null,
-      players: [p1 || "Player 1", p2 || "Player 2"],
-      started: true,
+      gameOverReason: null,
+      players: [p1 || 'Player 1', p2 || 'Player 2'],
+      started: true
     });
-    // Timer starts after first render
   }, []);
 
   useEffect(() => {
@@ -93,21 +98,19 @@ export function useGameState() {
   const submitCity = useCallback(
     (name: string): string | null => {
       const trimmed = name.trim();
-      if (!trimmed) return "Enter a city name";
+      if (!trimmed) return 'Enter a city name';
 
       const city = findCity(trimmed);
-      if (!city) return "Not a valid city";
+      if (!city) return 'Not a valid city';
 
-      // Check not reused
       if (
         state.chain.some(
-          (e) => e.city.name.toLowerCase() === city.name.toLowerCase(),
+          (e) => e.city.name.toLowerCase() === city.name.toLowerCase()
         )
       ) {
-        return "City already used";
+        return 'City already used';
       }
 
-      // Check starts with correct letter
       const required = getRequiredLetter();
       if (required && city.name[0].toUpperCase() !== required) {
         return `City must start with "${required}"`;
@@ -116,13 +119,23 @@ export function useGameState() {
       setState((prev) => ({
         ...prev,
         chain: [...prev.chain, { city, player: prev.currentPlayer }],
-        currentPlayer: prev.currentPlayer === 0 ? 1 : 0,
+        currentPlayer: prev.currentPlayer === 0 ? 1 : 0
       }));
 
       return null;
     },
-    [state.chain, getRequiredLetter],
+    [state.chain, getRequiredLetter]
   );
+
+  const giveUp = useCallback(() => {
+    stopTimer();
+    setState((prev) => ({
+      ...prev,
+      gameOver: true,
+      loser: prev.currentPlayer,
+      gameOverReason: 'gaveUp'
+    }));
+  }, [stopTimer]);
 
   const rematch = useCallback(() => {
     setState((prev) => ({
@@ -131,10 +144,33 @@ export function useGameState() {
       timers: [TURN_TIME, TURN_TIME],
       gameOver: false,
       loser: null,
+      gameOverReason: null,
       players: prev.players,
-      started: true,
+      started: true
     }));
   }, []);
 
-  return { state, submitCity, getRequiredLetter, startGame, rematch };
+  const exitGame = useCallback(() => {
+    stopTimer();
+    setState({
+      chain: [],
+      currentPlayer: 0,
+      timers: [TURN_TIME, TURN_TIME],
+      gameOver: false,
+      loser: null,
+      gameOverReason: null,
+      players: ['Player 1', 'Player 2'],
+      started: false
+    });
+  }, [stopTimer]);
+
+  return {
+    state,
+    submitCity,
+    getRequiredLetter,
+    startGame,
+    rematch,
+    exitGame,
+    giveUp
+  };
 }
