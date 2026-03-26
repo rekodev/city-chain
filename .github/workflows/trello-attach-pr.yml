@@ -15,20 +15,47 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
+        env:
+          TRELLO_BOARD_ID: ${{ secrets.TRELLO_BOARD_ID }}
         run: |
-          # Extract card IDs from [ABC,DEF] pattern in title or body
+          # Extract CC-N keys from [CC-1, CC-2] pattern in title or body
           COMBINED="$PR_TITLE $PR_BODY"
-          CARD_IDS=$(echo "$COMBINED" | grep -oP '(?<=\[)[A-Za-z0-9,\s]+(?=\])' | tr ',' '\n' | tr -d ' ' | grep -E '^[A-Za-z0-9]{8}$')
+          CC_KEYS=$(echo "$COMBINED" | grep -oP '(?<=\[)[^\]]+(?=\])' | tr ',' '\n' | tr -d ' ' | grep -E '^CC-[0-9]+$')
 
-          if [ -z "$CARD_IDS" ]; then
-            echo "No Trello card IDs found — skipping."
+          if [ -z "$CC_KEYS" ]; then
+            echo "No CC-N keys found — skipping."
             exit 0
           fi
 
-          for CARD_ID in $CARD_IDS; do
-            echo "Attaching PR to card: $CARD_ID"
+          # Fetch all cards on the board once
+          BOARD_CARDS=$(curl -s \
+            "https://api.trello.com/1/boards/$TRELLO_BOARD_ID/cards?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN&fields=name,shortLink")
+
+          for KEY in $CC_KEYS; do
+            echo "Looking up card for: $KEY"
+            SHORT_LINK=$(echo "$BOARD_CARDS" | grep -o "\"name\":\"${KEY}[^\"]*\".*\"shortLink\":\"[^\"]*\"" | grep -o '"shortLink":"[^"]*"' | grep -o '[^"]*$' | head -1)
+
+            if [ -z "$SHORT_LINK" ]; then
+              # Try matching key anywhere in the name (e.g. "CC-1: Some title")
+              SHORT_LINK=$(echo "$BOARD_CARDS" | python3 -c "
+import sys, json, re
+cards = json.load(sys.stdin)
+key = '${KEY}'
+for c in cards:
+    if re.match(r'^' + re.escape(key) + r'(\b|:|-)', c['name']):
+        print(c['shortLink'])
+        break
+" 2>/dev/null)
+            fi
+
+            if [ -z "$SHORT_LINK" ]; then
+              echo "  → Card not found for $KEY, skipping"
+              continue
+            fi
+
+            echo "  → Found shortLink: $SHORT_LINK"
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
-              "https://api.trello.com/1/cards/$CARD_ID/attachments" \
+              "https://api.trello.com/1/cards/$SHORT_LINK/attachments" \
               -d "key=$TRELLO_API_KEY" \
               -d "token=$TRELLO_TOKEN" \
               --data-urlencode "url=$PR_URL" \
