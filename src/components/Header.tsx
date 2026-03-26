@@ -13,6 +13,9 @@ export default function Header() {
         </Link>
 
         <div className="flex items-center gap-2">
+          <Button size="sm" variant="secondary" asChild>
+            <Link to="/play">Play</Link>
+          </Button>
           <Button variant="ghost" size="sm" asChild>
             <Link to="/login">Log in</Link>
           </Button>

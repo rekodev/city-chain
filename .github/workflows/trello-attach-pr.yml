@@ -36,9 +36,7 @@ jobs:
             exit 0
           fi
 
-          echo "Key length: ${#TRELLO_API_KEY}, Token length: ${#TRELLO_TOKEN}"
           BOARD_CARDS=$(curl -s "https://api.trello.com/1/boards/$TRELLO_BOARD_ID/cards?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN&fields=name,shortLink")
-          echo "Board cards response (first 200 chars): ${BOARD_CARDS:0:200}"
 
           cat > /tmp/find_card.py << 'EOF'
           import sys, json, re
