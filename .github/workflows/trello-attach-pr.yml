@@ -10,13 +10,13 @@ jobs:
     steps:
       - name: Parse Trello card IDs and attach PR
         env:
+        env:
           TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
           TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
+          TRELLO_BOARD_ID: ${{ secrets.TRELLO_BOARD_ID }}
           PR_URL: ${{ github.event.pull_request.html_url }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
-        env:
-          TRELLO_BOARD_ID: ${{ secrets.TRELLO_BOARD_ID }}
         run: |
           # Extract CC-N keys from [CC-1, CC-2] pattern in title or body
           COMBINED="$PR_TITLE $PR_BODY"
