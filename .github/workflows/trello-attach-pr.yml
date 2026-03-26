@@ -3,6 +3,17 @@ name: Attach PR to Trello Cards
 on:
   pull_request:
     types: [opened, edited, reopened, synchronize]
+  workflow_dispatch:
+    inputs:
+      pr_url:
+        description: PR URL
+        required: true
+      pr_title:
+        description: PR title (include [CC-N] keys)
+        required: true
+      pr_body:
+        description: PR body
+        required: false
 
 jobs:
   attach:
@@ -13,9 +24,9 @@ jobs:
           TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
           TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
           TRELLO_BOARD_ID: ${{ secrets.TRELLO_BOARD_ID }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_URL: ${{ github.event.pull_request.html_url || github.event.inputs.pr_url }}
+          PR_TITLE: ${{ github.event.pull_request.title || github.event.inputs.pr_title }}
+          PR_BODY: ${{ github.event.pull_request.body || github.event.inputs.pr_body }}
         run: |
           COMBINED="$PR_TITLE $PR_BODY"
           CC_KEYS=$(echo "$COMBINED" | grep -oP '(?<=\[)[^\]]+(?=\])' | tr ',' '\n' | tr -d ' ' | grep -E '^CC-[0-9]+$' || true)
