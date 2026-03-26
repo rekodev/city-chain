@@ -48,6 +48,13 @@ jobs:
                   break
           EOF
 
+          cat > /tmp/check_attachment.py << 'EOF'
+          import sys, json
+          attachments = json.load(sys.stdin)
+          pr_url = sys.argv[1]
+          print('found' if any(a.get('url') == pr_url for a in attachments) else 'not_found')
+          EOF
+
           for KEY in $CC_KEYS; do
             echo "Looking up card for: $KEY"
             SHORT_LINK=$(echo "$BOARD_CARDS" | python3 /tmp/find_card.py "$KEY" 2>/dev/null || true)
@@ -58,12 +65,7 @@ jobs:
             fi
 
             echo "  → Found shortLink: $SHORT_LINK"
-            EXISTING=$(curl -s "https://api.trello.com/1/cards/$SHORT_LINK/attachments?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN" | python3 -c "
-import sys, json
-attachments = json.load(sys.stdin)
-pr_url = sys.argv[1]
-print('found' if any(a.get('url') == pr_url for a in attachments) else 'not_found')
-" "$PR_URL" 2>/dev/null || echo "not_found")
+            EXISTING=$(curl -s "https://api.trello.com/1/cards/$SHORT_LINK/attachments?key=$TRELLO_API_KEY&token=$TRELLO_TOKEN" | python3 /tmp/check_attachment.py "$PR_URL" 2>/dev/null || echo "not_found")
 
             if [ "$EXISTING" = "found" ]; then
               echo "  → Already attached, skipping"
