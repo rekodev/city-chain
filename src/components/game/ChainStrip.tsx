@@ -21,7 +21,7 @@ export default function ChainStrip({ chain, onCityClick }: ChainStripProps) {
   return (
     <div
       ref={scrollRef}
-      className="scrollbar-hide flex max-w-xs gap-2 overflow-x-auto py-1"
+      className="scrollbar-hide flex w-full max-w-md flex-wrap gap-2 overflow-x-auto border border-red-500 py-1"
       style={{ scrollbarWidth: 'none' }}
     >
       {chain.map((entry, i) => (

@@ -1,9 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
+import { type CityData } from '@/types/city';
+import { useGetCity } from '@/hooks/useGetCity';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface CityInputProps {
   requiredLetter: string | null;
-  onSubmit: (city: string) => string | null;
+  onSubmit: (city: CityData) => string | null;
   currentPlayer: 0 | 1;
   playerName: string;
 }
@@ -18,6 +22,10 @@ export default function CityInput({
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const debouncedValue = useDebounce(value, 500);
+  const { data: cityResult, isFetching } = useGetCity(debouncedValue);
+  const isLoading = isFetching || value !== debouncedValue;
+
   useEffect(() => {
     inputRef.current?.focus();
     setValue('');
@@ -26,7 +34,15 @@ export default function CityInput({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const err = onSubmit(value);
+    if (!value.trim() || isLoading) return;
+
+    if (!cityResult) {
+      setError('Unrecognized city');
+      setTimeout(() => setError(null), 2000);
+      return;
+    }
+
+    const err = onSubmit(cityResult);
     if (err) {
       setError(err);
       setTimeout(() => setError(null), 2000);
@@ -62,13 +78,14 @@ export default function CityInput({
           />
           <button
             type="submit"
-            className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+            disabled={isLoading}
+            className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all disabled:opacity-50 ${
               currentPlayer === 0
                 ? 'bg-primary text-primary-foreground hover:opacity-90'
                 : 'bg-secondary text-secondary-foreground hover:opacity-90'
             }`}
           >
-            Go
+            {isLoading ? <Loader2 size={16} className="animate-spin" /> : 'Go'}
           </button>
         </div>
         {error && (

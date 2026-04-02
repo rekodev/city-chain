@@ -81,7 +81,7 @@ function WorldMap({ chain, focusCity }: WorldMapProps) {
             key={line.index}
             from={line.from}
             to={line.to}
-            stroke="hsl(36, 90%, 55%)"
+            stroke="hsl(220, 10%, 55%)"
             strokeWidth={2}
             strokeLinecap="round"
             strokeDasharray="6 4"
