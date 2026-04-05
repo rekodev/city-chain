@@ -1,10 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { type CityData } from '@/types/city';
-
-export interface ChainEntry {
-  city: CityData;
-  player: 0 | 1;
-}
+import { type CityData, type ChainEntry } from '@/types/city';
 
 export type GameOverReason = 'timeout' | 'gaveUp';
 

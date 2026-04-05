@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ChangeEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { type CityData } from '@/types/city';
@@ -32,8 +32,8 @@ export default function CityInput({
     setError(null);
   }, [currentPlayer]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: ChangeEvent) => {
+    event.preventDefault();
     if (!value.trim() || isLoading) return;
 
     if (!cityResult) {
@@ -98,9 +98,11 @@ export default function CityInput({
           </motion.div>
         )}
       </form>
-      <div className="text-muted-foreground mt-2 text-center text-xs">
-        {playerName}'s turn
-      </div>
+      {playerName !== 'Practice' && (
+        <div className="text-muted-foreground mt-2 text-center text-xs">
+          {playerName}'s turn
+        </div>
+      )}
     </div>
   );
 }

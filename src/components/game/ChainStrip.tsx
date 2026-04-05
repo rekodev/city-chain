@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { type ChainEntry } from '@/hooks/useGameState';
+import { type ChainEntry } from '@/types/city';
 import { cn } from '@/lib/utils';
 
 interface ChainStripProps {
@@ -21,7 +21,7 @@ export default function ChainStrip({ chain, onCityClick }: ChainStripProps) {
   return (
     <div
       ref={scrollRef}
-      className="scrollbar-hide flex w-full max-w-md flex-wrap gap-2 overflow-x-auto border border-red-500 py-1"
+      className="scrollbar-hide flex w-full max-w-md flex-wrap gap-2 overflow-x-auto py-1"
       style={{ scrollbarWidth: 'none' }}
     >
       {chain.map((entry, i) => (

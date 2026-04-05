@@ -29,7 +29,8 @@ const modes = [
     label: 'Play Bots',
     description: 'Challenge our AI at Easy, Medium, or Hard',
     href: '/play/bots',
-    disabled: false
+    disabled: true,
+    badge: 'Coming Soon'
   },
   {
     id: 'friend',
@@ -158,13 +159,13 @@ export default function PlayMenu() {
     <div className="flex min-h-screen pt-14">
       {/* Globe — hidden on mobile */}
       <div className="hidden items-center justify-center p-12 lg:flex lg:flex-1">
-        <div className="aspect-square w-full max-w-[480px]">
+        <div className="aspect-square w-full max-w-120">
           <GlobePlaceholder />
         </div>
       </div>
 
       {/* Mode selection */}
-      <div className="lg:border-border/30 flex w-full flex-col justify-center px-6 py-12 lg:w-[460px] lg:shrink-0 lg:border-x lg:px-10">
+      <div className="lg:border-border/30 flex w-full flex-col justify-center px-6 py-12 lg:w-115 lg:shrink-0 lg:border-x lg:px-10">
         <h2 className="text-foreground mb-1 text-2xl font-bold">
           Play City Chain
         </h2>

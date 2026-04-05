@@ -7,7 +7,7 @@ import {
   Line
 } from 'react-simple-maps';
 import { motion } from 'framer-motion';
-import { type ChainEntry } from '@/hooks/useGameState';
+import { type ChainEntry } from '@/types/city';
 
 const GEO_URL =
   'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
