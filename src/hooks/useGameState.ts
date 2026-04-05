@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { type CityData, findCity } from '@/data/cities';
+import { type CityData } from '@/types/city';
 
 export interface ChainEntry {
   city: CityData;
@@ -96,13 +96,7 @@ export function useGameState() {
   }, [state.chain]);
 
   const submitCity = useCallback(
-    (name: string): string | null => {
-      const trimmed = name.trim();
-      if (!trimmed) return 'Enter a city name';
-
-      const city = findCity(trimmed);
-      if (!city) return 'Not a valid city';
-
+    (city: CityData): string | null => {
       if (
         state.chain.some(
           (e) => e.city.name.toLowerCase() === city.name.toLowerCase()
