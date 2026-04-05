@@ -3,3 +3,8 @@ export type CityData = {
   lat: number;
   lng: number;
 };
+
+export type ChainEntry = {
+  city: CityData;
+  player?: 0 | 1;
+};

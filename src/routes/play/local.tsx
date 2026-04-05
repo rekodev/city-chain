@@ -34,6 +34,7 @@ function LocalGame() {
   const [pendingPlayers, setPendingPlayers] = useState<[string, string] | null>(
     null
   );
+  const [pendingRematch, setPendingRematch] = useState(false);
 
   const isActiveGame = state.started && !state.gameOver;
 
@@ -45,7 +46,11 @@ function LocalGame() {
   useEffect(() => {
     if (countdown === null) return;
     if (countdown < 0) {
-      if (pendingPlayers) {
+      if (pendingRematch) {
+        rematch();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setPendingRematch(false);
+      } else if (pendingPlayers) {
         startGame(pendingPlayers[0], pendingPlayers[1]);
         setPendingPlayers(null);
       }
@@ -58,10 +63,15 @@ function LocalGame() {
       delay
     );
     return () => clearTimeout(t);
-  }, [countdown, pendingPlayers, startGame]);
+  }, [countdown, pendingPlayers, pendingRematch, startGame, rematch]);
 
   const handleStart = (p1: string, p2: string) => {
     setPendingPlayers([p1 || 'Player 1', p2 || 'Player 2']);
+    setCountdown(3);
+  };
+
+  const handleRematch = () => {
+    setPendingRematch(true);
     setCountdown(3);
   };
 
@@ -151,13 +161,13 @@ function LocalGame() {
         </>
       )}
 
-      {state.gameOver && state.loser !== null && (
+      {state.gameOver && state.loser !== null && !pendingRematch && (
         <GameOverScreen
           loser={state.loser}
           players={state.players}
           chain={state.chain}
           gameOverReason={state.gameOverReason}
-          onRematch={rematch}
+          onRematch={handleRematch}
           onExit={handleExit}
         />
       )}
