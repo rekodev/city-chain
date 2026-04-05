@@ -11,8 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SigninRouteImport } from './routes/signin'
 import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlayIndexRouteImport } from './routes/play/index'
 import { Route as PlayPracticeRouteImport } from './routes/play/practice'
@@ -20,6 +20,7 @@ import { Route as PlayOnlineRouteImport } from './routes/play/online'
 import { Route as PlayLocalRouteImport } from './routes/play/local'
 import { Route as PlayFriendRouteImport } from './routes/play/friend'
 import { Route as PlayBotsRouteImport } from './routes/play/bots'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -31,14 +32,14 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SigninRoute = SigninRouteImport.update({
+  id: '/signin',
+  path: '/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -76,11 +77,16 @@ const PlayBotsRoute = PlayBotsRouteImport.update({
   path: '/play/bots',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/play/bots': typeof PlayBotsRoute
@@ -89,11 +95,12 @@ export interface FileRoutesByFullPath {
   '/play/online': typeof PlayOnlineRoute
   '/play/practice': typeof PlayPracticeRoute
   '/play/': typeof PlayIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/play/bots': typeof PlayBotsRoute
@@ -102,12 +109,13 @@ export interface FileRoutesByTo {
   '/play/online': typeof PlayOnlineRoute
   '/play/practice': typeof PlayPracticeRoute
   '/play': typeof PlayIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/login': typeof LoginRoute
   '/privacy': typeof PrivacyRoute
+  '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/play/bots': typeof PlayBotsRoute
@@ -116,13 +124,14 @@ export interface FileRoutesById {
   '/play/online': typeof PlayOnlineRoute
   '/play/practice': typeof PlayPracticeRoute
   '/play/': typeof PlayIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/login'
     | '/privacy'
+    | '/signin'
     | '/signup'
     | '/terms'
     | '/play/bots'
@@ -131,11 +140,12 @@ export interface FileRouteTypes {
     | '/play/online'
     | '/play/practice'
     | '/play/'
+    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/login'
     | '/privacy'
+    | '/signin'
     | '/signup'
     | '/terms'
     | '/play/bots'
@@ -144,11 +154,12 @@ export interface FileRouteTypes {
     | '/play/online'
     | '/play/practice'
     | '/play'
+    | '/api/auth/$'
   id:
     | '__root__'
     | '/'
-    | '/login'
     | '/privacy'
+    | '/signin'
     | '/signup'
     | '/terms'
     | '/play/bots'
@@ -157,12 +168,13 @@ export interface FileRouteTypes {
     | '/play/online'
     | '/play/practice'
     | '/play/'
+    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  LoginRoute: typeof LoginRoute
   PrivacyRoute: typeof PrivacyRoute
+  SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
   TermsRoute: typeof TermsRoute
   PlayBotsRoute: typeof PlayBotsRoute
@@ -171,6 +183,7 @@ export interface RootRouteChildren {
   PlayOnlineRoute: typeof PlayOnlineRoute
   PlayPracticeRoute: typeof PlayPracticeRoute
   PlayIndexRoute: typeof PlayIndexRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -189,18 +202,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signin': {
+      id: '/signin'
+      path: '/signin'
+      fullPath: '/signin'
+      preLoaderRoute: typeof SigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -252,13 +265,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayBotsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  LoginRoute: LoginRoute,
   PrivacyRoute: PrivacyRoute,
+  SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
   TermsRoute: TermsRoute,
   PlayBotsRoute: PlayBotsRoute,
@@ -267,6 +287,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlayOnlineRoute: PlayOnlineRoute,
   PlayPracticeRoute: PlayPracticeRoute,
   PlayIndexRoute: PlayIndexRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -32,6 +32,7 @@ function PracticeGame() {
     if (countdown < 0) {
       startGame();
       setIsPlaying(true);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCountdown(null);
       return;
     }
