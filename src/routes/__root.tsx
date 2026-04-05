@@ -1,4 +1,9 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router';
+import {
+  HeadContent,
+  Outlet,
+  Scripts,
+  createRootRoute
+} from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '../components/ui/sonner';
 import { TooltipProvider } from '../components/ui/tooltip';
@@ -32,16 +37,20 @@ export const Route = createRootRoute({
     links: [{ rel: 'stylesheet', href: appCss }]
   }),
   notFoundComponent: NotFound,
-  shellComponent: RootDocument
+  shellComponent: RootDocument,
+  component: AppShell
 });
 
-function AppShell({ children }: { children: React.ReactNode }) {
+function AppShell() {
   const { isPlaying } = useGameStatus();
+
   return (
     <>
       <Toaster />
       {!isPlaying && <Header />}
-      <main className="mx-auto w-full max-w-7xl">{children}</main>
+      <main className="mx-auto w-full max-w-7xl">
+        <Outlet />
+      </main>
       {!isPlaying && <Footer />}
     </>
   );
@@ -56,9 +65,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
-            <GameStatusProvider>
-              <AppShell>{children}</AppShell>
-            </GameStatusProvider>
+            <GameStatusProvider>{children}</GameStatusProvider>
           </TooltipProvider>
         </QueryClientProvider>
         <Scripts />
