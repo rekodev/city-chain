@@ -38,8 +38,7 @@ const modes = [
     label: 'Play a Friend',
     description: 'Generate a private link and invite someone',
     href: '/play/friend',
-    disabled: true,
-    badge: 'Coming Soon'
+    disabled: false
   },
   {
     id: 'online',
