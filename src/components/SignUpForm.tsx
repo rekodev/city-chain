@@ -1,5 +1,6 @@
 import { useState, type ChangeEvent } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
+import { Link2 } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,9 +58,11 @@ export default function SignUpForm() {
 
       <Card className="border-muted bg-card/80 relative z-10 w-full max-w-md backdrop-blur-xl">
         <CardHeader className="space-y-2 text-center">
-          <div className="mx-auto mb-2 text-4xl">🌍</div>
+          <div className="mx-auto mb-2">
+            <Link2 size={32} className="text-primary" strokeWidth={2.2} />
+          </div>
           <CardTitle className="text-foreground font-mono text-2xl font-bold tracking-tight">
-            Join City Chain
+            Join CityChain
           </CardTitle>
           <CardDescription className="text-muted-foreground">
             Create your account and start exploring

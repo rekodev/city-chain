@@ -1,4 +1,11 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
+import {
+  Bot,
+  MonitorSmartphone,
+  Target,
+  Users,
+  Globe2
+} from 'lucide-react';
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
 
 export const Route = createFileRoute('/play/')({ component: PlayMenu });
@@ -9,7 +16,7 @@ const GEO_URL =
 const modes = [
   {
     id: 'local',
-    icon: '📱',
+    icon: MonitorSmartphone,
     label: 'Local Multiplayer',
     description: 'Pass the device and take turns together',
     href: '/play/local',
@@ -17,7 +24,7 @@ const modes = [
   },
   {
     id: 'practice',
-    icon: '🎯',
+    icon: Target,
     label: 'Practice',
     description: 'Chain cities solo with no timer pressure',
     href: '/play/practice',
@@ -25,7 +32,7 @@ const modes = [
   },
   {
     id: 'bots',
-    icon: '🤖',
+    icon: Bot,
     label: 'Play Bots',
     description: 'Challenge our AI at Easy, Medium, or Hard',
     href: '/play/bots',
@@ -34,7 +41,7 @@ const modes = [
   },
   {
     id: 'friend',
-    icon: '🔗',
+    icon: Users,
     label: 'Play a Friend',
     description: 'Generate a private link and invite someone',
     href: '/play/friend',
@@ -42,7 +49,7 @@ const modes = [
   },
   {
     id: 'online',
-    icon: '🌐',
+    icon: Globe2,
     label: 'Play Online',
     description: 'Get matched with a random opponent worldwide',
     href: '/play/online',
@@ -102,7 +109,7 @@ function GlobePlaceholder() {
 }
 
 function ModeCard({
-  icon,
+  icon: Icon,
   label,
   description,
   href,
@@ -117,7 +124,7 @@ function ModeCard({
           : 'border-border/50 bg-card/60 hover:border-primary/50 hover:bg-card/90 hover:shadow-[0_0_20px_hsl(36,90%,55%,0.08)]'
       }`}
     >
-      <span className="text-3xl">{icon}</span>
+      <Icon className="text-primary shrink-0" size={28} strokeWidth={2.1} />
       <div className="flex-1">
         <div className="flex items-center gap-2">
           <span className="text-foreground font-semibold">{label}</span>
@@ -166,7 +173,7 @@ export default function PlayMenu() {
       {/* Mode selection */}
       <div className="lg:border-border/30 flex w-full flex-col justify-center px-6 py-12 lg:w-115 lg:shrink-0 lg:border-x lg:px-10">
         <h2 className="text-foreground mb-1 text-2xl font-bold">
-          Play City Chain
+          Play CityChain
         </h2>
         <p className="text-muted-foreground mb-7 text-sm">
           Choose a game mode to get started

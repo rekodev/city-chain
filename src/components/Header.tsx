@@ -1,8 +1,10 @@
 import { Link } from '@tanstack/react-router';
+import { Gamepad2, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UserMenu from '@/components/UserMenu';
 import { authClient } from '@/lib/auth-client';
 import { PATH } from '#/constants/path';
+import type { User } from 'better-auth';
 
 function AuthenticatedHeader({
   name,
@@ -16,7 +18,10 @@ function AuthenticatedHeader({
   return (
     <div className="flex items-center gap-3">
       <Button size="lg" variant="secondary" className="px-6 text-white" asChild>
-        <Link to={PATH.play.index}>Play</Link>
+        <Link to={PATH.play.index}>
+          <Gamepad2 size={16} className="shrink-0" />
+          Play
+        </Link>
       </Button>
       <UserMenu name={name} email={email} image={image} />
     </div>
@@ -27,7 +32,10 @@ function UnauthenticatedHeader() {
   return (
     <div className="flex items-center gap-2">
       <Button size="lg" variant="secondary" className="px-6 text-white" asChild>
-        <Link to={PATH.play.index}>Play</Link>
+        <Link to={PATH.play.index}>
+          <Gamepad2 size={16} className="shrink-0" />
+          Play
+        </Link>
       </Button>
       <Button variant="ghost" size="sm" asChild>
         <Link to={PATH.signIn}>Sign in</Link>
@@ -39,17 +47,17 @@ function UnauthenticatedHeader() {
   );
 }
 
-export default function Header() {
+export default function Header({ initialUser }: { initialUser?: User | null }) {
   const { data: session } = authClient.useSession();
-  const user = session?.user;
+  const user = session?.user ?? initialUser;
 
   return (
     <header className="border-border/30 bg-background/70 fixed top-0 right-0 left-0 z-50 border-b backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2 no-underline">
-          <span className="text-lg">🔗</span>
+          <Link2 size={18} className="text-primary shrink-0" />
           <span className="text-foreground text-sm font-bold tracking-tight">
-            City Chain
+            CityChain
           </span>
         </Link>
 
