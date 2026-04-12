@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Flag } from 'lucide-react';
 
 import { usePracticeState } from '@/hooks/usePracticeState';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { useGameStatus } from '@/context/gameStatus';
 import WorldMap from '@/components/game/WorldMap';
 import ChainStrip from '@/components/game/ChainStrip';
@@ -26,6 +27,8 @@ function PracticeGame() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [ended, setEnded] = useState(false);
   const [finalChainLength, setFinalChainLength] = useState(0);
+
+  useScrollLock(countdown !== null || state.started || ended);
 
   useEffect(() => {
     if (countdown === null) return;
@@ -68,27 +71,27 @@ function PracticeGame() {
     navigate({ to: '/play' });
   };
 
-  if (!state.started && countdown === null && !ended) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-6 text-center">
-        <p className="text-5xl">🎯</p>
-        <h1 className="text-3xl font-bold">Practice Mode</h1>
-        <p className="text-muted-foreground max-w-xs text-sm">
-          Chain cities with no timer or opponent. Just you and the map.
-        </p>
-        <button
-          onClick={() => setCountdown(3)}
-          className="bg-primary text-primary-foreground rounded-xl px-8 py-3 text-lg font-bold transition-all hover:scale-105 hover:opacity-90"
-        >
-          Start
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen overflow-hidden">
       <WorldMap chain={state.chain} focusCity={focusCity} />
+
+      {!state.started && countdown === null && !ended && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center">
+          <div className="mx-4 flex min-h-screen flex-col items-center justify-center gap-6 text-center">
+            <p className="text-5xl">🎯</p>
+            <h1 className="text-3xl font-bold">Practice Mode</h1>
+            <p className="text-muted-foreground max-w-xs text-sm">
+              Chain cities with no timer or opponent. Just you and the map.
+            </p>
+            <button
+              onClick={() => setCountdown(3)}
+              className="bg-primary text-primary-foreground rounded-xl px-8 py-3 text-lg font-bold transition-all hover:scale-105 hover:opacity-90"
+            >
+              Start
+            </button>
+          </div>
+        </div>
+      )}
 
       <AnimatePresence>
         {countdown !== null && (

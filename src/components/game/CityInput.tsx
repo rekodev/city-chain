@@ -5,19 +5,19 @@ import { type CityData } from '@/types/city';
 import { useGetCity } from '@/hooks/useGetCity';
 import { useDebounce } from '@/hooks/useDebounce';
 
-interface CityInputProps {
+type Props = {
   requiredLetter: string | null;
   onSubmit: (city: CityData) => string | null;
   currentPlayer: 0 | 1;
   playerName: string;
-}
+};
 
 export default function CityInput({
   requiredLetter,
   onSubmit,
   currentPlayer,
   playerName
-}: CityInputProps) {
+}: Props) {
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -28,6 +28,7 @@ export default function CityInput({
 
   useEffect(() => {
     inputRef.current?.focus();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setValue('');
     setError(null);
   }, [currentPlayer]);
@@ -79,7 +80,7 @@ export default function CityInput({
           <button
             type="submit"
             disabled={isLoading}
-            className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all disabled:opacity-50 ${
+            className={`min-h-9 rounded-xl px-4 py-2 text-sm font-semibold transition-all disabled:opacity-50 ${
               currentPlayer === 0
                 ? 'bg-primary text-primary-foreground hover:opacity-90'
                 : 'bg-secondary text-secondary-foreground hover:opacity-90'
