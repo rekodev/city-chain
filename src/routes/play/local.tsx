@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Flag } from 'lucide-react';
 import { useGameState } from '@/hooks/useGameState';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { useGameStatus } from '@/context/gameStatus';
 import WorldMap from '@/components/game/WorldMap';
 import PlayerCard from '@/components/game/PlayerCard';
@@ -37,6 +38,8 @@ function LocalGame() {
   const [pendingRematch, setPendingRematch] = useState(false);
 
   const isActiveGame = state.started && !state.gameOver;
+
+  useScrollLock(countdown !== null || state.started || state.gameOver);
 
   useEffect(() => {
     setIsPlaying(isActiveGame);

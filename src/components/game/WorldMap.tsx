@@ -12,13 +12,13 @@ import { type ChainEntry } from '@/types/city';
 const GEO_URL =
   'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
 
-interface WorldMapProps {
-  chain: ChainEntry[];
+type Props = {
+  chain: Array<ChainEntry>;
   focusCity?: { lat: number; lng: number } | null;
   onPillClick?: (index: number) => void;
-}
+};
 
-function WorldMap({ chain, focusCity }: WorldMapProps) {
+function WorldMap({ chain, focusCity }: Props) {
   const center: [number, number] = useMemo(() => {
     if (focusCity) return [focusCity.lng, focusCity.lat];
     if (chain.length > 0) {
@@ -47,15 +47,16 @@ function WorldMap({ chain, focusCity }: WorldMapProps) {
   }, [chain]);
 
   return (
-    <div className="fixed inset-0 z-0">
+    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
       <ComposableMap
         projection="geoMercator"
         projectionConfig={{
           center,
           scale: zoom * 120
         }}
+        preserveAspectRatio="xMidYMid slice"
         className="h-full w-full"
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100vw', height: '100vh' }}
       >
         <Geographies geography={GEO_URL}>
           {({ geographies }) =>
@@ -82,9 +83,9 @@ function WorldMap({ chain, focusCity }: WorldMapProps) {
             from={line.from}
             to={line.to}
             stroke="hsl(220, 10%, 55%)"
-            strokeWidth={2}
+            strokeWidth={1.5}
             strokeLinecap="round"
-            strokeDasharray="6 4"
+            strokeDasharray="5 4"
             style={{ opacity: 0.6 }}
           />
         ))}
@@ -93,7 +94,7 @@ function WorldMap({ chain, focusCity }: WorldMapProps) {
           <Marker key={i} coordinates={[entry.city.lng, entry.city.lat]}>
             <motion.circle
               initial={{ r: 0, opacity: 0 }}
-              animate={{ r: 6, opacity: 1 }}
+              animate={{ r: 4.5, opacity: 1 }}
               transition={{
                 type: 'spring',
                 stiffness: 200,
@@ -105,13 +106,13 @@ function WorldMap({ chain, focusCity }: WorldMapProps) {
               }
               className={
                 entry.player === 0
-                  ? 'drop-shadow-[0_0_6px_hsl(36,100%,60%)]'
-                  : 'drop-shadow-[0_0_6px_hsl(185,100%,55%)]'
+                  ? 'drop-shadow-[0_0_5px_hsl(36,100%,60%)]'
+                  : 'drop-shadow-[0_0_5px_hsl(185,100%,55%)]'
               }
             />
             <motion.circle
               initial={{ r: 0, opacity: 0 }}
-              animate={{ r: 12, opacity: 0 }}
+              animate={{ r: 9, opacity: 0 }}
               transition={{
                 duration: 1.5,
                 repeat: Infinity,
@@ -121,14 +122,14 @@ function WorldMap({ chain, focusCity }: WorldMapProps) {
               stroke={
                 entry.player === 0 ? 'hsl(36, 90%, 55%)' : 'hsl(185, 70%, 45%)'
               }
-              strokeWidth={1.5}
+              strokeWidth={1.1}
             />
             <text
               textAnchor="middle"
-              y={-14}
+              y={-11}
               style={{
                 fontFamily: 'Inter, sans-serif',
-                fontSize: 9,
+                fontSize: 7,
                 fill: 'hsl(210, 20%, 90%)',
                 fontWeight: 600,
                 textShadow: '0 1px 4px rgba(0,0,0,0.8)'
