@@ -122,6 +122,11 @@ export const Route = createFileRoute('/api/multiplayer/room')({
         }
 
         const identity = await getRequestIdentity(request);
+        const headers = buildHeaders(
+          request,
+          identity.guestId,
+          identity.shouldSetGuestCookie
+        );
         const snapshot = await getMultiplayerRoomSnapshot(roomId);
 
         if (!snapshot) {
@@ -134,7 +139,8 @@ export const Route = createFileRoute('/api/multiplayer/room')({
             snapshot,
             identity.participantKey,
             identity.user?.id ?? null
-          )
+          ),
+          { headers }
         );
       },
       POST: async ({ request }: { request: Request }) => {
@@ -257,7 +263,7 @@ export const Route = createFileRoute('/api/multiplayer/room')({
             );
 
             if (
-              hostParticipant &&
+              !hostParticipant ||
               hostParticipant.id !== `host:${identity.participantKey}:${roomId}`
             ) {
               return Response.json(

@@ -51,16 +51,18 @@ export default function CityInput({
 
     setIsSubmitting(true);
 
-    const err = await onSubmit(cityResult);
-    if (err) {
-      setError(err);
-      setTimeout(() => setError(null), 2000);
-    } else {
-      setValue('');
-      setError(null);
+    try {
+      const err = await onSubmit(cityResult);
+      if (err) {
+        setError(err);
+        setTimeout(() => setError(null), 2000);
+      } else {
+        setValue('');
+        setError(null);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
   };
 
   return (

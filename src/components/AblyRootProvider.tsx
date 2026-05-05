@@ -19,18 +19,18 @@ export default function AblyRootProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [client, setClient] = useState<Ably.Realtime | null>(null);
+  const [client] = useState<Ably.Realtime | null>(() =>
+    typeof window !== 'undefined' ? getRealtimeClient() : null
+  );
 
   useEffect(() => {
-    const nextClient = getRealtimeClient();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setClient(nextClient);
-
     return () => {
-      nextClient.close();
-      realtimeClient = null;
+      if (client) {
+        client.close();
+        realtimeClient = null;
+      }
     };
-  }, []);
+  }, [client]);
 
   if (!client) return <>{children}</>;
 

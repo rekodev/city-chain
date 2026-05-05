@@ -12,6 +12,6 @@ export function getAblyRestClient() {
 
 export function getAblyTokenCapability(): Record<string, Array<CapabilityOp>> {
   return {
-    'multiplayer-room:*': ['subscribe', 'publish', 'presence', 'history']
+    'multiplayer-room:*': ['subscribe', 'presence']
   };
 }

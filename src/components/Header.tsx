@@ -48,8 +48,8 @@ function UnauthenticatedHeader() {
 }
 
 export default function Header({ initialUser }: { initialUser?: User | null }) {
-  const { data: session } = authClient.useSession();
-  const user = session?.user ?? initialUser;
+  const { data: session, isPending } = authClient.useSession();
+  const user = isPending ? initialUser : (session?.user ?? null);
 
   return (
     <header className="border-border/30 bg-background/70 fixed top-0 right-0 left-0 z-50 border-b backdrop-blur-md">
