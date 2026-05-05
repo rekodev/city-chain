@@ -295,31 +295,38 @@ export async function ensureFriendRoom({
   const existing = await getMultiplayerRoomSnapshot(roomId);
   if (existing) return existing;
 
-  await db.transaction(async (tx) => {
-    await tx.insert(multiplayerRoom).values({
-      id: roomId,
-      kind: 'friend',
-      status: 'waiting',
-      hostUserId,
-      hostDisplayName
-    });
+  try {
+    await db.transaction(async (tx) => {
+      await tx.insert(multiplayerRoom).values({
+        id: roomId,
+        kind: 'friend',
+        status: 'waiting',
+        hostUserId: hostUserId || null,
+        hostDisplayName
+      });
 
-    await tx.insert(multiplayerRoomState).values({
-      roomId,
-      status: 'waiting'
-    });
+      await tx.insert(multiplayerRoomState).values({
+        roomId,
+        status: 'waiting'
+      });
 
-    await tx.insert(multiplayerRoomParticipant).values({
-      id: getParticipantId(roomId, hostParticipantKey, 'host'),
-      roomId,
-      userId: hostUserId,
-      role: 'host',
-      slot: 0,
-      displayName: hostDisplayName,
-      isGuest: !hostUserId,
-      isReady: true
+      await tx.insert(multiplayerRoomParticipant).values({
+        id: getParticipantId(roomId, hostParticipantKey, 'host'),
+        roomId,
+        userId: hostUserId || null,
+        role: 'host',
+        slot: 0,
+        displayName: hostDisplayName,
+        isGuest: !hostUserId,
+        isReady: true
+      });
     });
-  });
+  } catch (err) {
+    // Concurrent request already created the room — return it
+    const race = await getMultiplayerRoomSnapshot(roomId);
+    if (race) return race;
+    throw err;
+  }
 
   return getMultiplayerRoomSnapshot(roomId);
 }
@@ -335,98 +342,107 @@ export async function joinFriendRoom({
   userId: string | null;
   participantKey: string;
 }) {
-  await db.transaction(async (tx) => {
-    const [room] = await tx
-      .select()
-      .from(multiplayerRoom)
-      .where(eq(multiplayerRoom.id, roomId))
-      .limit(1);
+  try {
+    await db.transaction(async (tx) => {
+      const [room] = await tx
+        .select()
+        .from(multiplayerRoom)
+        .where(eq(multiplayerRoom.id, roomId))
+        .limit(1);
 
-    if (!room) {
-      throw new Error('Room not found');
-    }
+      if (!room) {
+        throw new Error('Room not found');
+      }
 
-    const expectedParticipantId = getParticipantId(
-      roomId,
-      participantKey,
-      'player'
-    );
-
-    const existingByUser = userId
-      ? await tx
-          .select()
-          .from(multiplayerRoomParticipant)
-          .where(
-            and(
-              eq(multiplayerRoomParticipant.roomId, roomId),
-              eq(multiplayerRoomParticipant.userId, userId)
-            )
-          )
-          .limit(1)
-      : await tx
-          .select()
-          .from(multiplayerRoomParticipant)
-          .where(eq(multiplayerRoomParticipant.id, expectedParticipantId))
-          .limit(1);
-
-    const isNewParticipant = !existingByUser[0];
-
-    if (
-      isNewParticipant &&
-      room.status !== 'waiting' &&
-      room.status !== 'ready'
-    ) {
-      throw new Error('Room is not accepting new players');
-    }
-
-    const [existingSlotOne] = await tx
-      .select()
-      .from(multiplayerRoomParticipant)
-      .where(
-        and(
-          eq(multiplayerRoomParticipant.roomId, roomId),
-          eq(multiplayerRoomParticipant.slot, 1)
-        )
-      )
-      .limit(1);
-
-    if (isNewParticipant && existingSlotOne) {
-      throw new Error('Room is full');
-    }
-
-    if (existingByUser[0]) {
-      await tx
-        .update(multiplayerRoomParticipant)
-        .set({
-          displayName,
-          isReady: true,
-          leftAt: null,
-          lastSeenAt: new Date(),
-          updatedAt: new Date()
-        })
-        .where(eq(multiplayerRoomParticipant.id, existingByUser[0].id));
-    } else {
-      await tx.insert(multiplayerRoomParticipant).values({
-        id: expectedParticipantId,
+      const expectedParticipantId = getParticipantId(
         roomId,
-        userId,
-        role: 'player',
-        slot: 1,
-        displayName,
-        isGuest: !userId,
-        isReady: true
-      });
+        participantKey,
+        'player'
+      );
 
-      await tx
-        .update(multiplayerRoom)
-        .set({
-          status: 'ready',
-          lastActivityAt: new Date(),
-          updatedAt: new Date()
-        })
-        .where(eq(multiplayerRoom.id, roomId));
+      const existingByUser = userId
+        ? await tx
+            .select()
+            .from(multiplayerRoomParticipant)
+            .where(
+              and(
+                eq(multiplayerRoomParticipant.roomId, roomId),
+                eq(multiplayerRoomParticipant.userId, userId)
+              )
+            )
+            .limit(1)
+        : await tx
+            .select()
+            .from(multiplayerRoomParticipant)
+            .where(eq(multiplayerRoomParticipant.id, expectedParticipantId))
+            .limit(1);
+
+      const isNewParticipant = !existingByUser[0];
+
+      if (
+        isNewParticipant &&
+        room.status !== 'waiting' &&
+        room.status !== 'ready'
+      ) {
+        throw new Error('Room is not accepting new players');
+      }
+
+      const [existingSlotOne] = await tx
+        .select()
+        .from(multiplayerRoomParticipant)
+        .where(
+          and(
+            eq(multiplayerRoomParticipant.roomId, roomId),
+            eq(multiplayerRoomParticipant.slot, 1)
+          )
+        )
+        .limit(1);
+
+      if (isNewParticipant && existingSlotOne) {
+        throw new Error('Room is full');
+      }
+
+      if (existingByUser[0]) {
+        await tx
+          .update(multiplayerRoomParticipant)
+          .set({
+            displayName,
+            isReady: true,
+            leftAt: null,
+            lastSeenAt: new Date(),
+            updatedAt: new Date()
+          })
+          .where(eq(multiplayerRoomParticipant.id, existingByUser[0].id));
+      } else {
+        await tx.insert(multiplayerRoomParticipant).values({
+          id: expectedParticipantId,
+          roomId,
+          userId,
+          role: 'player',
+          slot: 1,
+          displayName,
+          isGuest: !userId,
+          isReady: true
+        });
+
+        await tx
+          .update(multiplayerRoom)
+          .set({
+            status: 'ready',
+            lastActivityAt: new Date(),
+            updatedAt: new Date()
+          })
+          .where(eq(multiplayerRoom.id, roomId));
+      }
+    });
+  } catch (err) {
+    // Two concurrent joins may race on slot-1 unique constraint — treat as full
+    const existing = await getMultiplayerRoomSnapshot(roomId);
+    if (existing?.participants.some((p) => p.slot === 1)) {
+      throw new Error('Room is full', { cause: err });
     }
-  });
+    throw err;
+  }
 
   return getMultiplayerRoomSnapshot(roomId);
 }
