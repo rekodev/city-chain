@@ -7,19 +7,24 @@ import { useDebounce } from '@/hooks/useDebounce';
 
 type Props = {
   requiredLetter: string | null;
-  onSubmit: (city: CityData) => string | null;
+  onSubmit: (city: CityData) => string | null | Promise<string | null>;
   currentPlayer: 0 | 1;
   playerName: string;
+  disabled?: boolean;
+  disabledPlaceholder?: string;
 };
 
 export default function CityInput({
   requiredLetter,
   onSubmit,
   currentPlayer,
-  playerName
+  playerName,
+  disabled = false,
+  disabledPlaceholder
 }: Props) {
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const debouncedValue = useDebounce(value, 500);
@@ -31,11 +36,12 @@ export default function CityInput({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setValue('');
     setError(null);
+    setIsSubmitting(false);
   }, [currentPlayer]);
 
-  const handleSubmit = (event: ChangeEvent) => {
+  const handleSubmit = async (event: ChangeEvent) => {
     event.preventDefault();
-    if (!value.trim() || isLoading) return;
+    if (!value.trim() || isLoading || isSubmitting) return;
 
     if (!cityResult) {
       setError('Unrecognized city');
@@ -43,13 +49,19 @@ export default function CityInput({
       return;
     }
 
-    const err = onSubmit(cityResult);
-    if (err) {
-      setError(err);
-      setTimeout(() => setError(null), 2000);
-    } else {
-      setValue('');
-      setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const err = await onSubmit(cityResult);
+      if (err) {
+        setError(err);
+        setTimeout(() => setError(null), 2000);
+      } else {
+        setValue('');
+        setError(null);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -67,26 +79,35 @@ export default function CityInput({
           <input
             ref={inputRef}
             type="text"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
+            value={disabled ? '' : value}
+            onChange={(e) => {
+              if (!disabled) setValue(e.target.value);
+            }}
             placeholder={
-              requiredLetter
-                ? `City starting with ${requiredLetter}...`
-                : 'Name any city to start...'
+              disabled && disabledPlaceholder
+                ? disabledPlaceholder
+                : requiredLetter
+                  ? `City starting with ${requiredLetter}...`
+                  : 'Name any city to start...'
             }
-            className="text-foreground placeholder:text-muted-foreground flex-1 bg-transparent text-lg font-medium outline-none"
+            disabled={disabled}
+            className="text-foreground placeholder:text-muted-foreground flex-1 bg-transparent text-lg font-medium outline-none disabled:cursor-not-allowed"
             autoComplete="off"
           />
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={disabled || isLoading || isSubmitting}
             className={`min-h-9 rounded-xl px-4 py-2 text-sm font-semibold transition-all disabled:opacity-50 ${
               currentPlayer === 0
                 ? 'bg-primary text-primary-foreground hover:opacity-90'
                 : 'bg-secondary text-secondary-foreground hover:opacity-90'
             }`}
           >
-            {isLoading ? <Loader2 size={16} className="animate-spin" /> : 'Go'}
+            {isLoading || isSubmitting ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              'Go'
+            )}
           </button>
         </div>
         {error && (

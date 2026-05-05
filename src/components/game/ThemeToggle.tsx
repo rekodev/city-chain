@@ -36,6 +36,7 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     const initialMode = getInitialMode();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMode(initialMode);
     applyThemeMode(initialMode);
   }, []);

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { type ChainEntry, type GameOverReason } from '@/hooks/useGameState';
+import { type GameOverReason } from '@/hooks/useGameState';
+import { type ChainEntry } from '#/types/city';
 
 interface GameOverScreenProps {
   loser: 0 | 1;
@@ -8,6 +9,9 @@ interface GameOverScreenProps {
   gameOverReason: GameOverReason | null;
   onRematch: () => void;
   onExit: () => void;
+  showRematch?: boolean;
+  rematchLabel?: string;
+  rematchPending?: boolean;
 }
 
 export default function GameOverScreen({
@@ -16,7 +20,10 @@ export default function GameOverScreen({
   chain,
   gameOverReason,
   onRematch,
-  onExit
+  onExit,
+  showRematch = true,
+  rematchLabel = 'Rematch',
+  rematchPending = false
 }: GameOverScreenProps) {
   const winner = loser === 0 ? 1 : 0;
   const gaveUp = gameOverReason === 'gaveUp';
@@ -65,12 +72,19 @@ export default function GameOverScreen({
         </div>
 
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <button
-            onClick={onRematch}
-            className="bg-primary text-primary-foreground w-full rounded-xl px-8 py-3 text-lg font-bold transition-all hover:scale-105 hover:opacity-90 sm:w-auto"
-          >
-            Rematch
-          </button>
+          {showRematch ? (
+            <button
+              onClick={rematchPending ? undefined : onRematch}
+              disabled={rematchPending}
+              className={`w-full rounded-xl px-8 py-3 text-lg font-bold transition-all sm:w-auto ${
+                rematchPending
+                  ? 'bg-primary/50 text-primary-foreground cursor-default opacity-70'
+                  : 'bg-primary text-primary-foreground hover:scale-105 hover:opacity-90'
+              }`}
+            >
+              {rematchLabel}
+            </button>
+          ) : null}
           <button
             onClick={onExit}
             className="border-border/50 bg-card/60 text-muted-foreground hover:border-border hover:text-foreground w-full rounded-xl border px-8 py-3 text-lg font-semibold backdrop-blur-sm transition-all sm:w-auto"

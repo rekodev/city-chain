@@ -20,7 +20,9 @@ import { Route as PlayOnlineRouteImport } from './routes/play/online'
 import { Route as PlayLocalRouteImport } from './routes/play/local'
 import { Route as PlayFriendRouteImport } from './routes/play/friend'
 import { Route as PlayBotsRouteImport } from './routes/play/bots'
+import { Route as ApiMultiplayerRoomRouteImport } from './routes/api/multiplayer/room'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiAblyTokenRouteImport } from './routes/api/ably/token'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -77,9 +79,19 @@ const PlayBotsRoute = PlayBotsRouteImport.update({
   path: '/play/bots',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMultiplayerRoomRoute = ApiMultiplayerRoomRouteImport.update({
+  id: '/api/multiplayer/room',
+  path: '/api/multiplayer/room',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAblyTokenRoute = ApiAblyTokenRouteImport.update({
+  id: '/api/ably/token',
+  path: '/api/ably/token',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -95,7 +107,9 @@ export interface FileRoutesByFullPath {
   '/play/online': typeof PlayOnlineRoute
   '/play/practice': typeof PlayPracticeRoute
   '/play/': typeof PlayIndexRoute
+  '/api/ably/token': typeof ApiAblyTokenRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/multiplayer/room': typeof ApiMultiplayerRoomRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -109,7 +123,9 @@ export interface FileRoutesByTo {
   '/play/online': typeof PlayOnlineRoute
   '/play/practice': typeof PlayPracticeRoute
   '/play': typeof PlayIndexRoute
+  '/api/ably/token': typeof ApiAblyTokenRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/multiplayer/room': typeof ApiMultiplayerRoomRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -124,7 +140,9 @@ export interface FileRoutesById {
   '/play/online': typeof PlayOnlineRoute
   '/play/practice': typeof PlayPracticeRoute
   '/play/': typeof PlayIndexRoute
+  '/api/ably/token': typeof ApiAblyTokenRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/multiplayer/room': typeof ApiMultiplayerRoomRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -140,7 +158,9 @@ export interface FileRouteTypes {
     | '/play/online'
     | '/play/practice'
     | '/play/'
+    | '/api/ably/token'
     | '/api/auth/$'
+    | '/api/multiplayer/room'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -154,7 +174,9 @@ export interface FileRouteTypes {
     | '/play/online'
     | '/play/practice'
     | '/play'
+    | '/api/ably/token'
     | '/api/auth/$'
+    | '/api/multiplayer/room'
   id:
     | '__root__'
     | '/'
@@ -168,7 +190,9 @@ export interface FileRouteTypes {
     | '/play/online'
     | '/play/practice'
     | '/play/'
+    | '/api/ably/token'
     | '/api/auth/$'
+    | '/api/multiplayer/room'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -183,7 +207,9 @@ export interface RootRouteChildren {
   PlayOnlineRoute: typeof PlayOnlineRoute
   PlayPracticeRoute: typeof PlayPracticeRoute
   PlayIndexRoute: typeof PlayIndexRoute
+  ApiAblyTokenRoute: typeof ApiAblyTokenRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiMultiplayerRoomRoute: typeof ApiMultiplayerRoomRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -265,11 +291,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayBotsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/multiplayer/room': {
+      id: '/api/multiplayer/room'
+      path: '/api/multiplayer/room'
+      fullPath: '/api/multiplayer/room'
+      preLoaderRoute: typeof ApiMultiplayerRoomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ably/token': {
+      id: '/api/ably/token'
+      path: '/api/ably/token'
+      fullPath: '/api/ably/token'
+      preLoaderRoute: typeof ApiAblyTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -287,7 +327,9 @@ const rootRouteChildren: RootRouteChildren = {
   PlayOnlineRoute: PlayOnlineRoute,
   PlayPracticeRoute: PlayPracticeRoute,
   PlayIndexRoute: PlayIndexRoute,
+  ApiAblyTokenRoute: ApiAblyTokenRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiMultiplayerRoomRoute: ApiMultiplayerRoomRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

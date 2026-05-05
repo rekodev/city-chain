@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
+import { Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import HomeMap from '@/components/HomeMap';
 
@@ -11,9 +12,11 @@ function Home() {
 
       <div className="relative z-20 w-full max-w-xl">
         <div className="bg-background/50 rounded-2xl border border-white/10 px-8 py-10 shadow-2xl backdrop-blur-md">
-          <div className="mb-5 text-6xl">🔗</div>
+          <div className="mb-5 flex justify-center">
+            <Link2 size={52} className="text-primary" strokeWidth={2.2} />
+          </div>
           <h1 className="text-foreground mb-4 text-5xl font-bold tracking-tight sm:text-6xl">
-            Play City Chain
+            Play CityChain
           </h1>
           <p className="text-muted-foreground mb-8 text-base sm:text-lg">
             Chain cities around the world, beat the clock, and conquer the map.
