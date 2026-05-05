@@ -4,9 +4,14 @@ import { getAblyRestClient } from '@/server/ably';
 import {
   ensureFriendRoom,
   getMultiplayerRoomSnapshot,
+  giveUpFriendRoom,
   joinFriendRoom,
-  startFriendRoom
+  rematchFriendRoom,
+  resolveFriendRoomTimeout,
+  startFriendRoom,
+  submitFriendRoomMove
 } from '@/server/multiplayer-room';
+import { type CityData } from '@/types/city';
 
 const GUEST_PLAYER_COOKIE = 'multiplayer-guest-id';
 
@@ -68,6 +73,43 @@ function buildHeaders(
   return headers;
 }
 
+function withViewer(
+  roomId: string,
+  snapshot: Awaited<ReturnType<typeof getMultiplayerRoomSnapshot>>,
+  participantKey: string,
+  userId: string | null
+) {
+  if (!snapshot) return null;
+
+  const viewer =
+    snapshot.participants.find(
+      (participant) => participant.userId === userId && userId
+    ) ??
+    snapshot.participants.find(
+      (participant) =>
+        participant.id === `host:${participantKey}:${roomId}` ||
+        participant.id === `player:${participantKey}:${roomId}`
+    ) ??
+    null;
+
+  return {
+    ...snapshot,
+    viewer: viewer
+      ? {
+          participantId: viewer.id,
+          role: viewer.role,
+          slot: viewer.slot as 0 | 1
+        }
+      : null
+  };
+}
+
+async function publishRoomEvent(roomId: string, name: string) {
+  await getAblyRestClient()
+    .channels.get(`multiplayer-room:${roomId}`)
+    .publish(name, { roomId });
+}
+
 export const Route = createFileRoute('/api/multiplayer/room')({
   server: {
     handlers: {
@@ -79,13 +121,21 @@ export const Route = createFileRoute('/api/multiplayer/room')({
           return Response.json({ error: 'Missing room id' }, { status: 400 });
         }
 
+        const identity = await getRequestIdentity(request);
         const snapshot = await getMultiplayerRoomSnapshot(roomId);
 
         if (!snapshot) {
           return Response.json({ error: 'Room not found' }, { status: 404 });
         }
 
-        return Response.json(snapshot);
+        return Response.json(
+          withViewer(
+            roomId,
+            snapshot,
+            identity.participantKey,
+            identity.user?.id ?? null
+          )
+        );
       },
       POST: async ({ request }: { request: Request }) => {
         const body = (await request.json()) as
@@ -102,12 +152,30 @@ export const Route = createFileRoute('/api/multiplayer/room')({
           | {
               action: 'start';
               roomId?: string;
+            }
+          | {
+              action: 'submit-move';
+              roomId?: string;
+              city?: CityData;
+            }
+          | {
+              action: 'give-up';
+              roomId?: string;
+            }
+          | {
+              action: 'resolve-timeout';
+              roomId?: string;
+            }
+          | {
+              action: 'rematch';
+              roomId?: string;
             };
 
         if (!body?.roomId?.trim()) {
           return Response.json({ error: 'Missing room id' }, { status: 400 });
         }
 
+        const roomId = body.roomId.trim();
         const identity = await getRequestIdentity(request);
         const headers = buildHeaders(
           request,
@@ -127,13 +195,21 @@ export const Route = createFileRoute('/api/multiplayer/room')({
             }
 
             const snapshot = await ensureFriendRoom({
-              roomId: body.roomId.trim(),
+              roomId,
               hostDisplayName,
               hostUserId: identity.user?.id ?? null,
               hostParticipantKey: identity.participantKey
             });
 
-            return Response.json(snapshot, { headers });
+            return Response.json(
+              withViewer(
+                roomId,
+                snapshot,
+                identity.participantKey,
+                identity.user?.id ?? null
+              ),
+              { headers }
+            );
           }
 
           if (body.action === 'join') {
@@ -147,26 +223,27 @@ export const Route = createFileRoute('/api/multiplayer/room')({
             }
 
             const snapshot = await joinFriendRoom({
-              roomId: body.roomId.trim(),
+              roomId,
               displayName,
               userId: identity.user?.id ?? null,
               participantKey: identity.participantKey
             });
 
-            await getAblyRestClient()
-              .channels.get(`multiplayer-room:${body.roomId.trim()}`)
-              .publish('room.joined', {
-                roomId: body.roomId.trim(),
-                displayName
-              });
+            await publishRoomEvent(roomId, 'room.joined');
 
-            return Response.json(snapshot, { headers });
+            return Response.json(
+              withViewer(
+                roomId,
+                snapshot,
+                identity.participantKey,
+                identity.user?.id ?? null
+              ),
+              { headers }
+            );
           }
 
           if (body.action === 'start') {
-            const snapshot = await getMultiplayerRoomSnapshot(
-              body.roomId.trim()
-            );
+            const snapshot = await getMultiplayerRoomSnapshot(roomId);
 
             if (!snapshot) {
               return Response.json(
@@ -181,8 +258,7 @@ export const Route = createFileRoute('/api/multiplayer/room')({
 
             if (
               hostParticipant &&
-              hostParticipant.id !==
-                `host:${identity.participantKey}:${body.roomId.trim()}`
+              hostParticipant.id !== `host:${identity.participantKey}:${roomId}`
             ) {
               return Response.json(
                 { error: 'Only the host can start this room' },
@@ -197,15 +273,125 @@ export const Route = createFileRoute('/api/multiplayer/room')({
               );
             }
 
-            const startedSnapshot = await startFriendRoom(body.roomId.trim());
+            const startedSnapshot = await startFriendRoom(roomId);
 
-            await getAblyRestClient()
-              .channels.get(`multiplayer-room:${body.roomId.trim()}`)
-              .publish('game.started', {
-                roomId: body.roomId.trim()
-              });
+            await publishRoomEvent(roomId, 'game.started');
+            await publishRoomEvent(roomId, 'game.updated');
 
-            return Response.json(startedSnapshot, { headers });
+            return Response.json(
+              withViewer(
+                roomId,
+                startedSnapshot,
+                identity.participantKey,
+                identity.user?.id ?? null
+              ),
+              { headers }
+            );
+          }
+
+          if (body.action === 'submit-move') {
+            if (!body.city?.name) {
+              return Response.json({ error: 'Missing city' }, { status: 400 });
+            }
+
+            const snapshot = await submitFriendRoomMove({
+              roomId,
+              city: body.city,
+              participantKey: identity.participantKey,
+              userId: identity.user?.id ?? null
+            });
+
+            await publishRoomEvent(roomId, 'game.updated');
+
+            return Response.json(
+              withViewer(
+                roomId,
+                snapshot,
+                identity.participantKey,
+                identity.user?.id ?? null
+              ),
+              { headers }
+            );
+          }
+
+          if (body.action === 'give-up') {
+            const snapshot = await giveUpFriendRoom({
+              roomId,
+              participantKey: identity.participantKey,
+              userId: identity.user?.id ?? null
+            });
+
+            await publishRoomEvent(roomId, 'game.updated');
+
+            return Response.json(
+              withViewer(
+                roomId,
+                snapshot,
+                identity.participantKey,
+                identity.user?.id ?? null
+              ),
+              { headers }
+            );
+          }
+
+          if (body.action === 'resolve-timeout') {
+            const snapshot = await resolveFriendRoomTimeout(roomId);
+
+            await publishRoomEvent(roomId, 'game.updated');
+
+            return Response.json(
+              withViewer(
+                roomId,
+                snapshot,
+                identity.participantKey,
+                identity.user?.id ?? null
+              ),
+              { headers }
+            );
+          }
+
+          if (body.action === 'rematch') {
+            const current = await getMultiplayerRoomSnapshot(roomId);
+            if (!current) {
+              return Response.json(
+                { error: 'Room not found' },
+                { status: 404 }
+              );
+            }
+
+            const viewer = withViewer(
+              roomId,
+              current,
+              identity.participantKey,
+              identity.user?.id ?? null
+            );
+            if (!viewer?.viewer) {
+              return Response.json(
+                { error: 'Only participants can rematch' },
+                { status: 403, headers }
+              );
+            }
+
+            const { snapshot, started } = await rematchFriendRoom(
+              roomId,
+              identity.participantKey,
+              identity.user?.id ?? null
+            );
+
+            if (started) {
+              await publishRoomEvent(roomId, 'game.rematch');
+            }
+            await publishRoomEvent(roomId, 'game.updated');
+
+            return Response.json(
+              withViewer(
+                roomId,
+                snapshot,
+                identity.participantKey,
+                identity.user?.id ?? null
+              ),
+              { headers }
+            );
           }
 
           return Response.json(

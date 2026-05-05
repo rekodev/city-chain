@@ -196,6 +196,7 @@ export const multiplayerRoomState = pgTable(
     startedAt: timestamp('started_at'),
     endedAt: timestamp('ended_at'),
     lastMoveAt: timestamp('last_move_at'),
+    rematchRequestedBySlot: integer('rematch_requested_by_slot'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
       .defaultNow()
