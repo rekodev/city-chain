@@ -11,12 +11,18 @@ import CityInput from '@/components/game/CityInput';
 import ChainStrip from '@/components/game/ChainStrip';
 import GameOverScreen from '@/components/game/GameOverScreen';
 import StartScreen from '@/components/game/StartScreen';
+import {
+  type GameMode,
+  DEFAULT_GAME_MODE,
+  getTurnTimeForMode
+} from '@/constants/gameMode';
 
 export const Route = createFileRoute('/play/local')({ component: LocalGame });
 
 function LocalGame() {
   const navigate = useNavigate();
   const { setIsPlaying } = useGameStatus();
+  const [selectedMode, setSelectedMode] = useState<GameMode>(DEFAULT_GAME_MODE);
   const {
     state,
     submitCity,
@@ -25,7 +31,7 @@ function LocalGame() {
     rematch,
     exitGame,
     giveUp
-  } = useGameState();
+  } = useGameState(getTurnTimeForMode(selectedMode));
 
   const [focusCity, setFocusCity] = useState<{
     lat: number;
@@ -68,7 +74,8 @@ function LocalGame() {
     return () => clearTimeout(t);
   }, [countdown, pendingPlayers, pendingRematch, startGame, rematch]);
 
-  const handleStart = (p1: string, p2: string) => {
+  const handleStart = (p1: string, p2: string, mode: GameMode) => {
+    setSelectedMode(mode);
     setPendingPlayers([p1 || 'Player 1', p2 || 'Player 2']);
     setCountdown(3);
   };

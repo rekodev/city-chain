@@ -32,6 +32,7 @@ import { toast } from 'sonner';
 import ChainStrip from '@/components/game/ChainStrip';
 import CityInput from '@/components/game/CityInput';
 import GameOverScreen from '@/components/game/GameOverScreen';
+import GameModeSelector from '@/components/game/GameModeSelector';
 import PlayerCard from '@/components/game/PlayerCard';
 import WorldMap from '@/components/game/WorldMap';
 import { useGameStatus } from '@/context/gameStatus';
@@ -52,6 +53,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { PATH } from '#/constants/path';
 import { type ChainEntry, type CityData } from '@/types/city';
+import { type GameMode, DEFAULT_GAME_MODE } from '@/constants/gameMode';
 
 type FriendSearch = {
   room?: string;
@@ -78,6 +80,7 @@ type RoomSnapshot = {
   roomId: string;
   roomStatus: 'waiting' | 'ready' | 'active' | 'finished' | 'abandoned';
   gameStatus: 'waiting' | 'active' | 'finished';
+  gameMode: GameMode;
   participants: Array<{
     id: string;
     role: 'host' | 'player';
@@ -279,6 +282,9 @@ function getDerivedTimers(
   const timers: [number, number] = [...snapshot.timers];
   if (snapshot.gameStatus !== 'active' || !snapshot.lastMoveAt) return timers;
 
+  const activeTimer = timers[snapshot.currentTurnSlot];
+  if (activeTimer < 0) return timers;
+
   const elapsedSeconds = Math.max(
     0,
     (now - new Date(snapshot.lastMoveAt).getTime()) / 1000
@@ -286,7 +292,7 @@ function getDerivedTimers(
 
   timers[snapshot.currentTurnSlot] = Math.max(
     0,
-    Number((timers[snapshot.currentTurnSlot] - elapsedSeconds).toFixed(1))
+    Number((activeTimer - elapsedSeconds).toFixed(1))
   );
 
   return timers;
@@ -330,7 +336,7 @@ async function writeRoomAction(
   body:
     | { action: 'ensure-host'; roomId: string; hostDisplayName: string }
     | { action: 'join'; roomId: string; displayName: string }
-    | { action: 'start'; roomId: string }
+    | { action: 'start'; roomId: string; gameMode?: GameMode }
     | { action: 'submit-move'; roomId: string; city: CityData }
     | { action: 'give-up'; roomId: string }
     | { action: 'resolve-timeout'; roomId: string }
@@ -553,6 +559,7 @@ function PlayFriendLobbyRoom({
   const [isSubmittingMove, setIsSubmittingMove] = useState(false);
   const [isGivingUp, setIsGivingUp] = useState(false);
   const [isRematching, setIsRematching] = useState(false);
+  const [selectedMode, setSelectedMode] = useState<GameMode>(DEFAULT_GAME_MODE);
   const [now, setNow] = useState(() => Date.now());
   const [focusCity, setFocusCity] = useState<{
     lat: number;
@@ -880,6 +887,7 @@ function PlayFriendLobbyRoom({
       roomSnapshot?.gameStatus !== 'active' ||
       countdown !== null ||
       roomSnapshot.currentTurnSlot === undefined ||
+      derivedTimers[roomSnapshot.currentTurnSlot] < 0 ||
       derivedTimers[roomSnapshot.currentTurnSlot] > 0
     ) {
       return;
@@ -956,7 +964,8 @@ function PlayFriendLobbyRoom({
     try {
       const snapshot = await writeRoomAction({
         action: 'start',
-        roomId
+        roomId,
+        gameMode: selectedMode
       });
 
       setRoomSnapshot(snapshot);
@@ -1414,22 +1423,6 @@ function PlayFriendLobbyRoom({
                     Lobby presence is live through Ably, and room
                     membership/status now persists in the multiplayer tables.
                   </div>
-                  {isHost ? (
-                    <Button
-                      type="button"
-                      size="lg"
-                      disabled={
-                        !hasGuestInLobby ||
-                        connectionState !== 'connected' ||
-                        isStartingRoom ||
-                        isBootstrappingRoom
-                      }
-                      onClick={handleStart}
-                    >
-                      <Users size={16} />
-                      {isStartingRoom ? 'Starting...' : 'Start game'}
-                    </Button>
-                  ) : null}
                 </CardFooter>
               </Card>
 
@@ -1458,6 +1451,32 @@ function PlayFriendLobbyRoom({
                             : 'Share the invite link and wait for your friend to click Join game from another browser or device.'}
                         </p>
                       </div>
+
+                      <div className="border-border/40 bg-background/45 space-y-3 rounded-xl border p-4">
+                        <div className="text-foreground text-sm font-semibold">
+                          Time per turn
+                        </div>
+                        <GameModeSelector
+                          value={selectedMode}
+                          onChange={setSelectedMode}
+                        />
+                      </div>
+
+                      <Button
+                        type="button"
+                        size="lg"
+                        className="w-full"
+                        disabled={
+                          !hasGuestInLobby ||
+                          connectionState !== 'connected' ||
+                          isStartingRoom ||
+                          isBootstrappingRoom
+                        }
+                        onClick={handleStart}
+                      >
+                        <Users size={16} />
+                        {isStartingRoom ? 'Starting...' : 'Start game'}
+                      </Button>
 
                       <Button
                         asChild

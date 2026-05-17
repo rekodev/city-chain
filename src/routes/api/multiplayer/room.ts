@@ -12,6 +12,7 @@ import {
   submitFriendRoomMove
 } from '@/server/multiplayer-room';
 import { type CityData } from '@/types/city';
+import { type GameMode, GAME_MODES } from '@/constants/gameMode';
 
 const GUEST_PLAYER_COOKIE = 'multiplayer-guest-id';
 
@@ -158,6 +159,7 @@ export const Route = createFileRoute('/api/multiplayer/room')({
           | {
               action: 'start';
               roomId?: string;
+              gameMode?: string;
             }
           | {
               action: 'submit-move';
@@ -279,7 +281,12 @@ export const Route = createFileRoute('/api/multiplayer/room')({
               );
             }
 
-            const startedSnapshot = await startFriendRoom(roomId);
+            const validModes = GAME_MODES.map((m) => m.id);
+            const gameMode = validModes.includes(body.gameMode as GameMode)
+              ? (body.gameMode as GameMode)
+              : '1min';
+
+            const startedSnapshot = await startFriendRoom(roomId, gameMode);
 
             await publishRoomEvent(roomId, 'game.started');
             await publishRoomEvent(roomId, 'game.updated');

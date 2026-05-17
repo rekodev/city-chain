@@ -1,11 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import {
-  Bot,
-  MonitorSmartphone,
-  Target,
-  Users,
-  Globe2
-} from 'lucide-react';
+import { Bot, MonitorSmartphone, Target, Users, Globe2 } from 'lucide-react';
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
 
 export const Route = createFileRoute('/play/')({ component: PlayMenu });
@@ -15,29 +9,12 @@ const GEO_URL =
 
 const modes = [
   {
-    id: 'local',
-    icon: MonitorSmartphone,
-    label: 'Local Multiplayer',
-    description: 'Pass the device and take turns together',
-    href: '/play/local',
-    disabled: false
-  },
-  {
     id: 'practice',
     icon: Target,
     label: 'Practice',
     description: 'Chain cities solo with no timer pressure',
     href: '/play/practice',
     disabled: false
-  },
-  {
-    id: 'bots',
-    icon: Bot,
-    label: 'Play Bots',
-    description: 'Challenge our AI at Easy, Medium, or Hard',
-    href: '/play/bots',
-    disabled: true,
-    badge: 'Coming Soon'
   },
   {
     id: 'friend',
@@ -48,11 +25,28 @@ const modes = [
     disabled: false
   },
   {
+    id: 'local',
+    icon: MonitorSmartphone,
+    label: 'Local Multiplayer',
+    description: 'Pass the device and take turns together',
+    href: '/play/local',
+    disabled: false
+  },
+  {
     id: 'online',
     icon: Globe2,
     label: 'Play Online',
     description: 'Get matched with a random opponent worldwide',
     href: '/play/online',
+    disabled: true,
+    badge: 'Coming Soon'
+  },
+  {
+    id: 'bots',
+    icon: Bot,
+    label: 'Play Bots',
+    description: 'Challenge our AI at Easy, Medium, or Hard',
+    href: '/play/bots',
     disabled: true,
     badge: 'Coming Soon'
   }
