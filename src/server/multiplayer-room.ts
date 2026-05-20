@@ -8,6 +8,11 @@ import {
 } from '@/lib/db/schema';
 import { type CityData, type ChainEntry } from '@/types/city';
 import type { NeonTransaction } from '#/types/neon';
+import {
+  type GameMode,
+  getTurnTimeForMode,
+  UNLIMITED_TIMER_SENTINEL
+} from '@/constants/gameMode';
 
 type RoomRecord = typeof multiplayerRoom.$inferSelect;
 type RoomStateRecord = typeof multiplayerRoomState.$inferSelect;
@@ -18,6 +23,7 @@ export type MultiplayerRoomSnapshot = {
   roomId: string;
   roomStatus: 'waiting' | 'ready' | 'active' | 'finished' | 'abandoned';
   gameStatus: 'waiting' | 'active' | 'finished';
+  gameMode: GameMode;
   participants: Array<{
     id: string;
     role: 'host' | 'player';
@@ -51,6 +57,7 @@ function mapSnapshot(
     roomId: room.id,
     roomStatus: room.status,
     gameStatus: state.status,
+    gameMode: room.gameMode as GameMode,
     participants: participants
       .slice()
       .sort((a, b) => a.slot - b.slot)
@@ -98,14 +105,16 @@ function applyElapsedToTimers(state: RoomStateRecord, now: Date) {
   const elapsedSeconds = Math.max(0, (now.getTime() - anchor.getTime()) / 1000);
   const timers: [number, number] = [...state.timers] as [number, number];
 
-  timers[state.currentTurnSlot] = Math.max(
-    0,
-    Number((timers[state.currentTurnSlot] - elapsedSeconds).toFixed(1))
-  );
+  if (timers[state.currentTurnSlot] >= 0) {
+    timers[state.currentTurnSlot] = Math.max(
+      0,
+      Number((timers[state.currentTurnSlot] - elapsedSeconds).toFixed(1))
+    );
+  }
 
   return {
     timers,
-    expired: timers[state.currentTurnSlot] <= 0
+    expired: timers[state.currentTurnSlot] === 0
   };
 }
 
@@ -447,7 +456,7 @@ export async function joinFriendRoom({
   return getMultiplayerRoomSnapshot(roomId);
 }
 
-export async function startFriendRoom(roomId: string) {
+export async function startFriendRoom(roomId: string, gameMode: GameMode) {
   const [room] = await db
     .select()
     .from(multiplayerRoom)
@@ -458,6 +467,8 @@ export async function startFriendRoom(roomId: string) {
     throw new Error('Room cannot be started in its current state');
   }
 
+  const turnTime = getTurnTimeForMode(gameMode);
+  const initialTimer = turnTime ?? UNLIMITED_TIMER_SENTINEL;
   const now = new Date();
   const countdownEnd = new Date(now.getTime() + 3700);
 
@@ -465,6 +476,7 @@ export async function startFriendRoom(roomId: string) {
     .update(multiplayerRoom)
     .set({
       status: 'active',
+      gameMode,
       startedAt: now,
       lastActivityAt: now,
       updatedAt: now
@@ -476,7 +488,7 @@ export async function startFriendRoom(roomId: string) {
     .set({
       status: 'active',
       chain: [],
-      timers: [60, 60],
+      timers: [initialTimer, initialTimer],
       currentTurnSlot: 0,
       version: 0,
       gameOverReason: null,
@@ -528,6 +540,9 @@ export async function rematchFriendRoom(
     }
 
     if (currentRequest !== null && currentRequest !== mySlot) {
+      const turnTime = getTurnTimeForMode(bundle.room.gameMode as GameMode);
+      const initialTimer = turnTime ?? UNLIMITED_TIMER_SENTINEL;
+
       await tx
         .delete(multiplayerMove)
         .where(eq(multiplayerMove.roomId, roomId));
@@ -547,7 +562,7 @@ export async function rematchFriendRoom(
         .set({
           status: 'active',
           chain: [],
-          timers: [60, 60],
+          timers: [initialTimer, initialTimer],
           currentTurnSlot: 0,
           version: 0,
           gameOverReason: null,

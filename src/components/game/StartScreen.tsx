@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { type GameMode, DEFAULT_GAME_MODE } from '@/constants/gameMode';
+import GameModeSelector from './GameModeSelector';
 
 interface StartScreenProps {
-  onStart: (p1: string, p2: string) => void;
+  onStart: (p1: string, p2: string, mode: GameMode) => void;
 }
 
 export default function StartScreen({ onStart }: StartScreenProps) {
   const [p1, setP1] = useState('');
   const [p2, setP2] = useState('');
+  const [mode, setMode] = useState<GameMode>(DEFAULT_GAME_MODE);
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center">
@@ -25,7 +28,7 @@ export default function StartScreen({ onStart }: StartScreenProps) {
           Run out of time and you lose.
         </p>
 
-        <div className="mb-8 space-y-3">
+        <div className="mb-6 space-y-3">
           <input
             type="text"
             placeholder="Player 1 name"
@@ -42,8 +45,12 @@ export default function StartScreen({ onStart }: StartScreenProps) {
           />
         </div>
 
+        <div className="bg-card/80 border-border/30 mb-8 rounded-xl border px-4 py-3 text-left backdrop-blur-md">
+          <GameModeSelector value={mode} onChange={setMode} />
+        </div>
+
         <button
-          onClick={() => onStart(p1, p2)}
+          onClick={() => onStart(p1, p2, mode)}
           className="bg-primary text-primary-foreground glow-amber rounded-xl px-10 py-3 text-lg font-bold transition-all hover:scale-105 hover:opacity-90"
         >
           Start Game

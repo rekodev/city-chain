@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { UNLIMITED_TIMER_SENTINEL } from '@/constants/gameMode';
 
 interface PlayerCardProps {
   name: string;
@@ -14,10 +15,13 @@ export default function PlayerCard({
   isActive,
   player
 }: PlayerCardProps) {
+  const isUnlimited = time < 0 || time === UNLIMITED_TIMER_SENTINEL;
   const mins = Math.floor(time / 60);
   const secs = Math.floor(time % 60);
-  const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
-  const isLow = time < 10;
+  const timeStr = isUnlimited
+    ? '∞'
+    : `${mins}:${secs.toString().padStart(2, '0')}`;
+  const isLow = !isUnlimited && time < 10;
 
   return (
     <motion.div

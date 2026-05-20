@@ -43,6 +43,13 @@ export const multiplayerGameStatus = pgEnum('multiplayer_game_status', [
   'finished'
 ]);
 
+export const multiplayerGameMode = pgEnum('multiplayer_game_mode', [
+  '1min',
+  '5min',
+  '10min',
+  'unlimited'
+]);
+
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
@@ -125,6 +132,7 @@ export const multiplayerRoom = pgTable(
       onDelete: 'set null'
     }),
     hostDisplayName: text('host_display_name').notNull(),
+    gameMode: multiplayerGameMode('game_mode').default('1min').notNull(),
     startedAt: timestamp('started_at'),
     endedAt: timestamp('ended_at'),
     lastActivityAt: timestamp('last_activity_at').defaultNow().notNull(),

@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { type CityData, type ChainEntry } from '@/types/city';
+import { UNLIMITED_TIMER_SENTINEL } from '@/constants/gameMode';
 
 export type GameOverReason = 'timeout' | 'gaveUp';
 
@@ -14,13 +15,13 @@ export interface GameState {
   started: boolean;
 }
 
-const TURN_TIME = 60;
+export function useGameState(turnTime: number | null = 60) {
+  const initialTimer = turnTime ?? UNLIMITED_TIMER_SENTINEL;
 
-export function useGameState() {
   const [state, setState] = useState<GameState>({
     chain: [],
     currentPlayer: 0,
-    timers: [TURN_TIME, TURN_TIME],
+    timers: [initialTimer, initialTimer],
     gameOver: false,
     loser: null,
     gameOverReason: null,
@@ -38,16 +39,21 @@ export function useGameState() {
   }, []);
 
   const startTimer = useCallback(() => {
+    if (turnTime === null) return;
+
     stopTimer();
     timerRef.current = setInterval(() => {
       setState((prev) => {
         if (prev.gameOver) return prev;
+        const currentTimer = prev.timers[prev.currentPlayer];
+        if (currentTimer < 0) return prev;
+
         const newTimers: [number, number] = [...prev.timers];
         newTimers[prev.currentPlayer] = Math.max(
           0,
           newTimers[prev.currentPlayer] - 0.1
         );
-        if (newTimers[prev.currentPlayer] <= 0) {
+        if (newTimers[prev.currentPlayer] === 0) {
           return {
             ...prev,
             timers: newTimers,
@@ -59,20 +65,23 @@ export function useGameState() {
         return { ...prev, timers: newTimers };
       });
     }, 100);
-  }, [stopTimer]);
+  }, [stopTimer, turnTime]);
 
-  const startGame = useCallback((p1: string, p2: string) => {
-    setState({
-      chain: [],
-      currentPlayer: 0,
-      timers: [TURN_TIME, TURN_TIME],
-      gameOver: false,
-      loser: null,
-      gameOverReason: null,
-      players: [p1 || 'Player 1', p2 || 'Player 2'],
-      started: true
-    });
-  }, []);
+  const startGame = useCallback(
+    (p1: string, p2: string) => {
+      setState({
+        chain: [],
+        currentPlayer: 0,
+        timers: [initialTimer, initialTimer],
+        gameOver: false,
+        loser: null,
+        gameOverReason: null,
+        players: [p1 || 'Player 1', p2 || 'Player 2'],
+        started: true
+      });
+    },
+    [initialTimer]
+  );
 
   useEffect(() => {
     if (state.started && !state.gameOver) {
@@ -130,28 +139,28 @@ export function useGameState() {
     setState((prev) => ({
       chain: [],
       currentPlayer: 0,
-      timers: [TURN_TIME, TURN_TIME],
+      timers: [initialTimer, initialTimer],
       gameOver: false,
       loser: null,
       gameOverReason: null,
       players: prev.players,
       started: true
     }));
-  }, []);
+  }, [initialTimer]);
 
   const exitGame = useCallback(() => {
     stopTimer();
     setState({
       chain: [],
       currentPlayer: 0,
-      timers: [TURN_TIME, TURN_TIME],
+      timers: [initialTimer, initialTimer],
       gameOver: false,
       loser: null,
       gameOverReason: null,
       players: ['Player 1', 'Player 2'],
       started: false
     });
-  }, [stopTimer]);
+  }, [stopTimer, initialTimer]);
 
   return {
     state,
