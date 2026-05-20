@@ -5,6 +5,7 @@ import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { PATH } from '#/constants/path';
+import AuthPageLayout from '@/components/AuthPageLayout';
 
 export const Route = createFileRoute('/verify-email')({
   component: RouteComponent
@@ -20,7 +21,7 @@ function RouteComponent() {
     setResending(true);
     const { error } = await authClient.sendVerificationEmail({
       email: session.user.email,
-      callbackURL: `${window.location.origin}${PATH.play.index}`
+      callbackURL: `${window.location.origin}${PATH.play.index}?verified=true`
     });
     setResending(false);
 
@@ -33,10 +34,10 @@ function RouteComponent() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-6">
-      <div className="flex w-full max-w-md flex-col items-center gap-6 text-center">
-        <div className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-lg">
-          <Mail className="size-5" />
+    <AuthPageLayout>
+      <div className="flex flex-col items-center gap-6 text-center">
+        <div className="bg-primary/10 ring-primary/20 flex size-12 items-center justify-center rounded-2xl ring-2">
+          <Mail size={22} className="text-primary" strokeWidth={2.2} />
         </div>
         <div>
           <h1 className="text-2xl font-bold">Check your inbox</h1>
@@ -68,6 +69,6 @@ function RouteComponent() {
           </p>
         </div>
       </div>
-    </div>
+    </AuthPageLayout>
   );
 }

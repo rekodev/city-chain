@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { type GameMode, GAME_MODES } from '@/constants/gameMode';
-import { Infinity as InfinityIcon, Timer } from 'lucide-react';
+import { Infinity as InfinityIcon } from 'lucide-react';
 
 interface GameModeSelectorProps {
   value: GameMode;
@@ -16,11 +16,7 @@ export default function GameModeSelector({
   className
 }: GameModeSelectorProps) {
   return (
-    <div className={cn('space-y-2', className)}>
-      <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold tracking-[0.14em] uppercase">
-        <Timer size={12} />
-        <span>Time per turn</span>
-      </div>
+    <div className={cn(className)}>
       <div className="grid grid-cols-4 gap-1.5">
         {GAME_MODES.map((mode) => (
           <button

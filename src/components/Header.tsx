@@ -23,6 +23,7 @@ function AuthenticatedHeader({
           Play
         </Link>
       </Button>
+      <div className="bg-border/50 h-6 w-px" />
       <UserMenu name={name} email={email} image={image} />
     </div>
   );
@@ -30,19 +31,22 @@ function AuthenticatedHeader({
 
 function UnauthenticatedHeader() {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3">
       <Button size="lg" variant="secondary" className="px-6 text-white" asChild>
         <Link to={PATH.play.index}>
           <Gamepad2 size={16} className="shrink-0" />
           Play
         </Link>
       </Button>
-      <Button variant="ghost" size="sm" asChild>
-        <Link to={PATH.signIn}>Sign in</Link>
-      </Button>
-      <Button size="sm" asChild>
-        <Link to={PATH.singUp}>Sign up</Link>
-      </Button>
+      <div className="bg-border/50 h-6 w-px" />
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="sm" asChild>
+          <Link to={PATH.signIn}>Sign in</Link>
+        </Button>
+        <Button size="sm" asChild>
+          <Link to={PATH.singUp}>Sign up</Link>
+        </Button>
+      </div>
     </div>
   );
 }
@@ -55,8 +59,8 @@ export default function Header({ initialUser }: { initialUser?: User | null }) {
     <header className="border-border/30 bg-background/70 fixed top-0 right-0 left-0 z-50 border-b backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2 no-underline">
-          <Link2 size={18} className="text-primary shrink-0" />
-          <span className="text-foreground text-sm font-bold tracking-tight">
+          <Link2 size={22} className="text-primary shrink-0" />
+          <span className="text-foreground text-base font-bold tracking-tight">
             CityChain
           </span>
         </Link>
