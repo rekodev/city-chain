@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SigninRouteImport } from './routes/signin'
@@ -24,6 +25,11 @@ import { Route as ApiMultiplayerRoomRouteImport } from './routes/api/multiplayer
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAblyTokenRouteImport } from './routes/api/ably/token'
 
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/play/bots': typeof PlayBotsRoute
   '/play/friend': typeof PlayFriendRoute
   '/play/local': typeof PlayLocalRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/play/bots': typeof PlayBotsRoute
   '/play/friend': typeof PlayFriendRoute
   '/play/local': typeof PlayLocalRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/play/bots': typeof PlayBotsRoute
   '/play/friend': typeof PlayFriendRoute
   '/play/local': typeof PlayLocalRoute
@@ -152,6 +161,7 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/terms'
+    | '/verify-email'
     | '/play/bots'
     | '/play/friend'
     | '/play/local'
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/terms'
+    | '/verify-email'
     | '/play/bots'
     | '/play/friend'
     | '/play/local'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/terms'
+    | '/verify-email'
     | '/play/bots'
     | '/play/friend'
     | '/play/local'
@@ -201,6 +213,7 @@ export interface RootRouteChildren {
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
   TermsRoute: typeof TermsRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
   PlayBotsRoute: typeof PlayBotsRoute
   PlayFriendRoute: typeof PlayFriendRoute
   PlayLocalRoute: typeof PlayLocalRoute
@@ -214,6 +227,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -321,6 +341,7 @@ const rootRouteChildren: RootRouteChildren = {
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
   TermsRoute: TermsRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
   PlayBotsRoute: PlayBotsRoute,
   PlayFriendRoute: PlayFriendRoute,
   PlayLocalRoute: PlayLocalRoute,
