@@ -41,15 +41,19 @@ export default function SignUpForm() {
 
     const { error } = await authClient.signUp.email({ name, email, password });
 
-    setLoading(false);
-
     if (error) {
+      setLoading(false);
       toast.error(error.message ?? 'Failed to create account');
       return;
     }
 
-    toast.success('Account created! Welcome aboard, ' + name);
-    navigate({ to: '/' });
+    await authClient.sendVerificationEmail({
+      email,
+      callbackURL: PATH.play.index
+    });
+
+    setLoading(false);
+    navigate({ to: PATH.verifyEmail });
   };
 
   return (

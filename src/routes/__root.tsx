@@ -10,6 +10,7 @@ import { TooltipProvider } from '../components/ui/tooltip';
 import { GameStatusProvider, useGameStatus } from '../context/gameStatus';
 import AblyRootProvider from '../components/AblyRootProvider';
 import { getInitialSession } from '../server/session';
+import UnverifiedEmailBanner from '#/components/UnverifiedEmailBanner';
 
 import appCss from '../styles.css?url';
 import Header from '#/components/Header';
@@ -55,6 +56,7 @@ function AppShell() {
     <>
       <Toaster />
       {!isPlaying && <Header initialUser={initialUser} />}
+      {!isPlaying && <UnverifiedEmailBanner />}
       <main className="mx-auto w-full max-w-7xl">
         <Outlet />
       </main>

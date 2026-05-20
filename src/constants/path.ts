@@ -2,6 +2,7 @@ export const PATH = {
   root: '/',
   signIn: '/signin',
   singUp: '/signup',
+  verifyEmail: '/verify-email',
   play: {
     index: '/play',
     bots: '/play/bots',
