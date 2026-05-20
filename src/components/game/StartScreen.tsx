@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Swords } from 'lucide-react';
 import { type GameMode, DEFAULT_GAME_MODE } from '@/constants/gameMode';
 import GameModeSelector from './GameModeSelector';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface StartScreenProps {
   onStart: (p1: string, p2: string, mode: GameMode) => void;
@@ -13,48 +17,58 @@ export default function StartScreen({ onStart }: StartScreenProps) {
   const [mode, setMode] = useState<GameMode>(DEFAULT_GAME_MODE);
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center">
+    <div className="fixed inset-0 z-40 flex items-center justify-center px-4">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="mx-4 max-w-sm text-center"
+        className="bg-background/50 w-full max-w-md rounded-2xl border border-white/10 px-8 py-10 shadow-2xl backdrop-blur-md"
       >
-        <h1 className="text-primary glow-amber-text mb-2 font-mono text-5xl font-bold">
-          CITY CHAIN
-        </h1>
-        <p className="text-muted-foreground mb-8 text-sm">
-          Name cities. Each must start with the last letter of the previous one.
-          <br />
-          Run out of time and you lose.
-        </p>
-
-        <div className="mb-6 space-y-3">
-          <input
-            type="text"
-            placeholder="Player 1 name"
-            value={p1}
-            onChange={(e) => setP1(e.target.value)}
-            className="bg-card/80 border-primary/30 text-foreground placeholder:text-muted-foreground focus:border-primary w-full rounded-xl border px-4 py-3 backdrop-blur-md transition-colors outline-none"
-          />
-          <input
-            type="text"
-            placeholder="Player 2 name"
-            value={p2}
-            onChange={(e) => setP2(e.target.value)}
-            className="bg-card/80 border-secondary/30 text-foreground placeholder:text-muted-foreground focus:border-secondary w-full rounded-xl border px-4 py-3 backdrop-blur-md transition-colors outline-none"
-          />
+        <div className="mb-6 flex flex-col items-center gap-3 text-center">
+          <div className="bg-primary/10 ring-primary/20 flex size-12 items-center justify-center rounded-2xl ring-2">
+            <Swords size={22} className="text-primary" strokeWidth={2.2} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Local Multiplayer</h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Take turns naming cities. Each must start where the last one
+              ended.
+            </p>
+          </div>
         </div>
 
-        <div className="bg-card/80 border-border/30 mb-8 rounded-xl border px-4 py-3 text-left backdrop-blur-md">
-          <GameModeSelector value={mode} onChange={setMode} />
+        <div className="grid gap-6">
+          <div className="grid gap-2">
+            <Label htmlFor="p1">Player 1</Label>
+            <Input
+              id="p1"
+              type="text"
+              placeholder="Player 1 name"
+              value={p1}
+              onChange={(e) => setP1(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="p2">Player 2</Label>
+            <Input
+              id="p2"
+              type="text"
+              placeholder="Player 2 name"
+              value={p2}
+              onChange={(e) => setP2(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-3">
+            <Label>Time per turn</Label>
+            <GameModeSelector value={mode} onChange={setMode} />
+          </div>
+          <Button
+            onClick={() => onStart(p1, p2, mode)}
+            size="lg"
+            className="w-full"
+          >
+            Start Game
+          </Button>
         </div>
-
-        <button
-          onClick={() => onStart(p1, p2, mode)}
-          className="bg-primary text-primary-foreground glow-amber rounded-xl px-10 py-3 text-lg font-bold transition-all hover:scale-105 hover:opacity-90"
-        >
-          Start Game
-        </button>
       </motion.div>
     </div>
   );

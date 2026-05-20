@@ -5,6 +5,7 @@ import {
   createRootRoute,
   useLocation
 } from '@tanstack/react-router';
+import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '../components/ui/sonner';
 import { TooltipProvider } from '../components/ui/tooltip';
@@ -12,6 +13,7 @@ import { GameStatusProvider, useGameStatus } from '../context/gameStatus';
 import AblyRootProvider from '../components/AblyRootProvider';
 import { getInitialSession } from '../server/session';
 import UnverifiedEmailBanner from '#/components/UnverifiedEmailBanner';
+import { authClient } from '#/lib/auth-client';
 
 import appCss from '../styles.css?url';
 import Header from '#/components/Header';
@@ -20,12 +22,18 @@ import { PATH } from '#/constants/path';
 
 const queryClient = new QueryClient();
 
-const AUTH_PATHS = new Set<string>([
+const NO_FOOTER_PATHS = new Set<string>([
   PATH.signIn,
   PATH.singUp,
   PATH.forgotPassword,
   PATH.resetPassword,
-  PATH.verifyEmail
+  PATH.verifyEmail,
+  PATH.play.index,
+  PATH.play.local,
+  PATH.play.practice,
+  PATH.play.friend,
+  PATH.play.bots,
+  PATH.play.online
 ]);
 
 function NotFound() {
@@ -61,17 +69,29 @@ function AppShell() {
   const { isPlaying } = useGameStatus();
   const { initialUser } = Route.useLoaderData();
   const { pathname } = useLocation();
-  const isAuthPage = AUTH_PATHS.has(pathname);
+  const hideFooter = NO_FOOTER_PATHS.has(pathname);
+  const { data: session } = authClient.useSession();
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+
+  const showBanner =
+    !isPlaying &&
+    !!session?.user &&
+    !session.user.emailVerified &&
+    !bannerDismissed;
 
   return (
     <>
       <Toaster />
       {!isPlaying && <Header initialUser={initialUser} />}
-      {!isPlaying && <UnverifiedEmailBanner />}
+      {showBanner && (
+        <div className="fixed top-14 right-0 left-0 z-50">
+          <UnverifiedEmailBanner onDismiss={() => setBannerDismissed(true)} />
+        </div>
+      )}
       <main className="mx-auto w-full max-w-7xl">
         <Outlet />
       </main>
-      {!isPlaying && !isAuthPage && <Footer />}
+      {!isPlaying && !hideFooter && <Footer />}
     </>
   );
 }

@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Flag } from 'lucide-react';
+import { Flag, Target } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 import { usePracticeState } from '@/hooks/usePracticeState';
 import { useScrollLock } from '@/hooks/useScrollLock';
@@ -76,20 +77,31 @@ function PracticeGame() {
       <WorldMap chain={state.chain} focusCity={focusCity} />
 
       {!state.started && countdown === null && !ended && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center">
-          <div className="mx-4 flex min-h-screen flex-col items-center justify-center gap-6 text-center">
-            <p className="text-5xl">🎯</p>
-            <h1 className="text-3xl font-bold">Practice Mode</h1>
-            <p className="text-muted-foreground max-w-xs text-sm">
-              Chain cities with no timer or opponent. Just you and the map.
-            </p>
-            <button
+        <div className="fixed inset-0 z-40 flex items-center justify-center px-4">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-background/50 w-full max-w-md rounded-2xl border border-white/10 px-8 py-10 shadow-2xl backdrop-blur-md"
+          >
+            <div className="mb-6 flex flex-col items-center gap-3 text-center">
+              <div className="bg-primary/10 ring-primary/20 flex size-12 items-center justify-center rounded-2xl ring-2">
+                <Target size={22} className="text-primary" strokeWidth={2.2} />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">Practice Mode</h1>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  Chain cities with no timer or opponent. Just you and the map.
+                </p>
+              </div>
+            </div>
+            <Button
               onClick={() => setCountdown(3)}
-              className="bg-primary text-primary-foreground rounded-xl px-8 py-3 text-lg font-bold transition-all hover:scale-105 hover:opacity-90"
+              size="lg"
+              className="w-full"
             >
               Start
-            </button>
-          </div>
+            </Button>
+          </motion.div>
         </div>
       )}
 

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { PATH } from '#/constants/path';
+import AuthPageLayout from '@/components/AuthPageLayout';
 
 export const Route = createFileRoute('/reset-password')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -55,8 +56,11 @@ function RouteComponent() {
 
   if (!token) {
     return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-6">
-        <div className="flex w-full max-w-md flex-col items-center gap-4 text-center">
+      <AuthPageLayout>
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="bg-primary/10 ring-primary/20 flex size-12 items-center justify-center rounded-2xl ring-2">
+            <Link2 size={22} className="text-primary" strokeWidth={2.2} />
+          </div>
           <div>
             <h1 className="text-2xl font-bold">Invalid link</h1>
             <p className="text-muted-foreground mt-1 text-sm">
@@ -70,55 +74,53 @@ function RouteComponent() {
             Request a new one
           </Link>
         </div>
-      </div>
+      </AuthPageLayout>
     );
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <div className="flex flex-col items-center gap-3 text-center">
-            <div className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-lg">
-              <Link2 className="size-5" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">Set new password</h1>
-              <p className="text-muted-foreground mt-1 text-sm">
-                Choose a strong password for your account.
-              </p>
-            </div>
+    <AuthPageLayout>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="bg-primary/10 ring-primary/20 flex size-12 items-center justify-center rounded-2xl ring-2">
+            <Link2 size={22} className="text-primary" strokeWidth={2.2} />
           </div>
+          <div>
+            <h1 className="text-2xl font-bold">Set new password</h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Choose a strong password for your account.
+            </p>
+          </div>
+        </div>
 
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="password">New Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Resetting…' : 'Reset Password'}
-            </Button>
+        <div className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="password">New Password</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
-        </form>
-      </div>
-    </div>
+          <div className="grid gap-2">
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>
+            {loading ? 'Resetting…' : 'Reset Password'}
+          </Button>
+        </div>
+      </form>
+    </AuthPageLayout>
   );
 }

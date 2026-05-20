@@ -9,15 +9,11 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Check,
-  CheckCircle2,
   CircleDot,
   Copy,
   Crown,
   Flag,
   Loader2,
-  PlayCircle,
-  Timer,
-  TriangleAlert,
   UserRound,
   Users
 } from 'lucide-react';
@@ -46,11 +42,11 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { PATH } from '#/constants/path';
 import { type ChainEntry, type CityData } from '@/types/city';
 import { type GameMode, DEFAULT_GAME_MODE } from '@/constants/gameMode';
@@ -193,51 +189,6 @@ function getParticipantFromSnapshot(
     subtitle,
     image: undefined
   };
-}
-
-function getRoomStatusDisplay(
-  status: RoomSnapshot['roomStatus'] | 'creating' | 'waiting'
-) {
-  switch (status) {
-    case 'creating':
-      return {
-        icon: Loader2,
-        label: 'Creating',
-        iconClassName: 'text-muted-foreground animate-spin'
-      };
-    case 'waiting':
-      return { icon: Timer, label: 'Waiting', iconClassName: 'text-amber-400' };
-    case 'ready':
-      return {
-        icon: CheckCircle2,
-        label: 'Ready',
-        iconClassName: 'text-green-400'
-      };
-    case 'active':
-      return {
-        icon: PlayCircle,
-        label: 'Active',
-        iconClassName: 'text-sky-400'
-      };
-    case 'finished':
-      return {
-        icon: Flag,
-        label: 'Finished',
-        iconClassName: 'text-muted-foreground'
-      };
-    case 'abandoned':
-      return {
-        icon: TriangleAlert,
-        label: 'Abandoned',
-        iconClassName: 'text-destructive'
-      };
-    default:
-      return {
-        icon: CircleDot,
-        label: status,
-        iconClassName: 'text-muted-foreground'
-      };
-  }
 }
 
 function formatConnectionState(state: string) {
@@ -703,12 +654,6 @@ function PlayFriendLobbyRoom({
     !persistedHostParticipant;
   const guestParticipantLoading =
     isBootstrappingRoom && !liveGuestParticipant && !persistedGuestParticipant;
-  const hostRoomStatus = getRoomStatusDisplay(
-    roomSnapshot?.roomStatus ?? (isBootstrappingRoom ? 'creating' : 'waiting')
-  );
-  const guestRoomStatus = getRoomStatusDisplay(
-    roomSnapshot?.roomStatus ?? 'waiting'
-  );
 
   const localPresenceData = useMemo<LobbyPresenceData | null>(() => {
     if (!shouldEnterPresence) return null;
@@ -1180,61 +1125,83 @@ function PlayFriendLobbyRoom({
           {showGuestJoinScreen ? (
             roomSnapshot?.roomStatus === 'active' ||
             roomSnapshot?.roomStatus === 'finished' ? (
-              <Card className="bg-card/72 border-border/40 mx-auto w-full max-w-xl backdrop-blur-md">
-                <CardHeader>
-                  <div className="text-primary mb-1 flex items-center gap-2 text-xs font-semibold tracking-[0.2em] uppercase">
-                    <Users size={14} />
-                    <span>Play a Friend</span>
+              <Card className="bg-card/72 border-border/40 mx-auto w-full max-w-xl py-0 backdrop-blur-md">
+                <CardHeader className="px-8 pt-8 pb-0">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-primary/10 ring-primary/20 mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl ring-2">
+                        <Users
+                          size={18}
+                          className="text-primary"
+                          strokeWidth={2.2}
+                        />
+                      </div>
+                      <div>
+                        <CardTitle>Room unavailable</CardTitle>
+                        <CardDescription className="mt-1">
+                          {roomSnapshot.roomStatus === 'active'
+                            ? 'This game is already in progress and is not accepting new players.'
+                            : 'This game has already ended.'}
+                        </CardDescription>
+                      </div>
+                    </div>
                   </div>
-                  <CardTitle>Room unavailable</CardTitle>
-                  <CardDescription>
-                    {roomSnapshot.roomStatus === 'active'
-                      ? 'This game is already in progress and is not accepting new players.'
-                      : 'This game has already ended.'}
-                  </CardDescription>
                 </CardHeader>
-                <CardFooter>
+                <CardContent className="px-8 pb-8">
                   <Button
                     type="button"
                     variant="outline"
+                    size="lg"
                     className="w-full"
                     onClick={handleExit}
                   >
                     Back to menu
                   </Button>
-                </CardFooter>
+                </CardContent>
               </Card>
             ) : (
-              <Card className="bg-card/72 border-border/40 mx-auto w-full max-w-xl backdrop-blur-md">
-                <CardHeader>
-                  <div className="text-primary mb-1 flex items-center gap-2 text-xs font-semibold tracking-[0.2em] uppercase">
-                    <Users size={14} />
-                    <span>Play a Friend</span>
+              <Card className="bg-card/72 border-border/40 mx-auto w-full max-w-xl py-0 backdrop-blur-md">
+                <CardHeader className="px-8 pt-8 pb-0">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-primary/10 ring-primary/20 mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl ring-2">
+                        <Users
+                          size={18}
+                          className="text-primary"
+                          strokeWidth={2.2}
+                        />
+                      </div>
+                      <div>
+                        <CardTitle>Join game</CardTitle>
+                        <CardDescription className="mt-1">
+                          {hostName} invited you to this private CityChain room.
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <div className="text-muted-foreground flex shrink-0 flex-col items-end gap-1 text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <CircleDot
+                          size={10}
+                          className={
+                            connectionState === 'connected'
+                              ? 'text-primary'
+                              : 'text-muted-foreground'
+                          }
+                        />
+                        <span>{formatConnectionState(connectionState)}</span>
+                      </div>
+                      <span className="font-mono">{roomId}</span>
+                    </div>
                   </div>
-                  <CardTitle>Join game</CardTitle>
-                  <CardDescription>
-                    {hostName} invited you to this private CityChain room.
-                  </CardDescription>
                 </CardHeader>
 
-                <CardContent className="space-y-5">
-                  <div className="grid gap-3">
-                    <ParticipantCard
-                      label="Host"
-                      participant={hostParticipant}
-                      loading={hostParticipantLoading}
-                      host
-                    />
-                  </div>
-
-                  <div className="border-border/40 bg-background/45 rounded-xl border p-4">
-                    <div className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.14em] uppercase">
-                      Room code
-                    </div>
-                    <div className="text-foreground font-mono text-sm font-semibold">
-                      {roomId}
-                    </div>
-                  </div>
+                <CardContent className="grid gap-6 px-8 pb-8">
+                  <ParticipantCard
+                    label="Host"
+                    participant={hostParticipant}
+                    loading={hostParticipantLoading}
+                    host
+                  />
 
                   {sessionName ? (
                     <ParticipantCard
@@ -1246,13 +1213,8 @@ function PlayFriendLobbyRoom({
                       }}
                     />
                   ) : (
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="guest-name"
-                        className="text-muted-foreground text-xs font-semibold tracking-[0.14em] uppercase"
-                      >
-                        Guest name
-                      </label>
+                    <div className="grid gap-2">
+                      <Label htmlFor="guest-name">Guest name</Label>
                       <Input
                         id="guest-name"
                         value={guestName}
@@ -1264,22 +1226,6 @@ function PlayFriendLobbyRoom({
                     </div>
                   )}
 
-                  <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                    <CircleDot
-                      size={12}
-                      className={
-                        connectionState === 'connected'
-                          ? 'text-primary'
-                          : 'text-muted-foreground'
-                      }
-                    />
-                    <span>
-                      {formatConnectionState(connectionState)} to Ably
-                    </span>
-                  </div>
-                </CardContent>
-
-                <CardFooter className="flex flex-col gap-3">
                   <Button
                     type="button"
                     size="lg"
@@ -1291,177 +1237,115 @@ function PlayFriendLobbyRoom({
                   </Button>
 
                   {!sessionName ? (
-                    <div className="text-muted-foreground text-xs">
+                    <p className="text-muted-foreground text-xs">
                       Guests are supported. If you sign in first, your account
                       name can be shown in the lobby automatically.
-                    </div>
+                    </p>
                   ) : null}
-                </CardFooter>
+                </CardContent>
               </Card>
             )
           ) : (
-            <div className="grid w-full gap-6 lg:grid-cols-[1.2fr_0.9fr]">
-              <Card className="bg-card/72 border-border/40 backdrop-blur-md">
-                <CardHeader>
-                  <div className="text-primary mb-1 flex items-center gap-2 text-xs font-semibold tracking-[0.2em] uppercase">
-                    <Users size={14} />
-                    <span>Play a Friend</span>
+            <Card className="bg-card/72 border-border/40 mx-auto w-full max-w-xl py-0 backdrop-blur-md">
+              <CardHeader className="px-8 pt-8 pb-0">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-primary/10 ring-primary/20 mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl ring-2">
+                      <Users
+                        size={18}
+                        className="text-primary"
+                        strokeWidth={2.2}
+                      />
+                    </div>
+                    <div>
+                      <CardTitle>
+                        {isHost ? 'Private Lobby' : 'Joined Lobby'}
+                      </CardTitle>
+                      <CardDescription className="mt-1">
+                        {isHost
+                          ? 'Waiting for your friend to join.'
+                          : 'Connected. Waiting for the host to start.'}
+                      </CardDescription>
+                    </div>
                   </div>
-                  <CardTitle>
-                    {isHost ? 'Private lobby' : 'Joined lobby'}
-                  </CardTitle>
-                  <CardDescription>
-                    {isHost
-                      ? 'Share this link with a friend so they can open the same lobby from another browser or device.'
-                      : 'You are connected to the host lobby. Wait here until the match starts.'}
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="space-y-5">
-                  {isHost ? (
-                    <div className="border-border/40 bg-background/45 rounded-xl border p-4">
-                      <div className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.14em] uppercase">
-                        Invite link
-                      </div>
-                      <div className="flex flex-col gap-3 sm:flex-row">
-                        <Input
-                          value={shareUrl}
-                          readOnly
-                          className="bg-background/50 font-mono text-xs"
-                        />
-                        <Button
-                          type="button"
-                          size="lg"
-                          onClick={handleCopy}
-                          className="min-w-32"
-                        >
-                          {copied ? <Check size={16} /> : <Copy size={16} />}
-                          {copied ? 'Copied' : 'Copy link'}
-                        </Button>
-                      </div>
-                      <div className="text-muted-foreground mt-3 text-xs">
-                        Room code:{' '}
-                        <span className="text-foreground font-mono font-semibold">
-                          {roomId}
-                        </span>
-                      </div>
-                      <div className="text-muted-foreground mt-2 text-xs">
-                        Room status:{' '}
-                        <span className="text-foreground relative inline-flex pl-5 font-semibold">
-                          <span className="pointer-events-none absolute top-1/2 left-0.5 -translate-y-1/2">
-                            <hostRoomStatus.icon
-                              size={14}
-                              className={`${hostRoomStatus.iconClassName} shrink-0`}
-                            />
-                          </span>
-                          <span className="capitalize">
-                            {hostRoomStatus.label}
-                          </span>
-                        </span>
-                      </div>
+                  <div className="text-muted-foreground flex shrink-0 flex-col items-end gap-1 text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <CircleDot
+                        size={10}
+                        className={
+                          connectionState === 'connected'
+                            ? 'text-primary'
+                            : 'text-muted-foreground'
+                        }
+                      />
+                      <span>{formatConnectionState(connectionState)}</span>
                     </div>
-                  ) : (
-                    <div className="border-border/40 bg-background/45 rounded-xl border p-4">
-                      <div className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.14em] uppercase">
-                        Room status
-                      </div>
-                      <div className="text-foreground relative inline-flex pl-5 text-sm font-semibold">
-                        <span className="pointer-events-none absolute top-1/2 left-0 -translate-y-1/2">
-                          <guestRoomStatus.icon
-                            size={14}
-                            className={`${guestRoomStatus.iconClassName} shrink-0`}
-                          />
-                        </span>
-                        <span className="capitalize">
-                          {guestRoomStatus.label}
-                        </span>
-                      </div>
-                      <div className="text-muted-foreground mt-3 text-xs">
-                        Room code:{' '}
-                        <span className="text-foreground font-mono font-semibold">
-                          {roomId}
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                    <span className="font-mono">{roomId}</span>
+                  </div>
+                </div>
+              </CardHeader>
 
+              <CardContent className="flex flex-col gap-6 px-8 pb-8">
+                <div className="grid gap-3">
+                  <ParticipantCard
+                    label="Host"
+                    participant={hostParticipant}
+                    loading={hostParticipantLoading}
+                    host
+                  />
+                  <ParticipantCard
+                    label="Friend"
+                    participant={guestParticipant}
+                    loading={guestParticipantLoading}
+                    empty={!guestParticipant}
+                  />
+                </div>
+
+                {isHost && (
+                  <div className="grid gap-2">
+                    <Label>Invite link</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={shareUrl}
+                        readOnly
+                        className="bg-background/50 font-mono text-xs"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleCopy}
+                        className="shrink-0"
+                      >
+                        {copied ? <Check size={16} /> : <Copy size={16} />}
+                        {copied ? 'Copied' : 'Copy'}
+                      </Button>
+                    </div>
+                    <p className="text-muted-foreground text-xs">
+                      Share this link with a friend to invite them to this room.
+                    </p>
+                  </div>
+                )}
+
+                {isHost && (
                   <div className="grid gap-3">
-                    <ParticipantCard
-                      label="Host"
-                      participant={hostParticipant}
-                      loading={hostParticipantLoading}
-                      host
-                    />
-                    <ParticipantCard
-                      label="Friend"
-                      participant={guestParticipant}
-                      loading={guestParticipantLoading}
-                      empty={!guestParticipant}
+                    <Label>Time per turn</Label>
+                    <GameModeSelector
+                      value={selectedMode}
+                      onChange={setSelectedMode}
                     />
                   </div>
+                )}
 
-                  <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                    <CircleDot
-                      size={12}
-                      className={
-                        connectionState === 'connected'
-                          ? 'text-primary'
-                          : 'text-muted-foreground'
-                      }
-                    />
-                    <span>
-                      {formatConnectionState(connectionState)} to Ably
-                    </span>
-                  </div>
-                  <div className="text-muted-foreground text-xs">
-                    Persisted players in room: {1 + persistedGuestCount}/2
-                  </div>
-                </CardContent>
+                {!sessionName && hasJoinedRoom && !isHost && (
+                  <p className="text-muted-foreground text-xs">
+                    Guests are supported. Sign in first to have your account
+                    name shown automatically.
+                  </p>
+                )}
 
-                <CardFooter className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-muted-foreground text-xs">
-                    Lobby presence is live through Ably, and room
-                    membership/status now persists in the multiplayer tables.
-                  </div>
-                </CardFooter>
-              </Card>
-
-              <Card className="bg-card/72 border-border/40 backdrop-blur-md">
-                <CardHeader>
-                  <CardTitle>{isHost ? 'Host view' : 'Guest view'}</CardTitle>
-                  <CardDescription>
-                    {isHost
-                      ? 'Open the copied link in a private browser to preview the guest join flow.'
-                      : 'You are now inside the room and waiting on the host.'}
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
+                <div className="mt-2 grid gap-3">
                   {isHost ? (
                     <>
-                      <div className="border-border/40 bg-background/45 rounded-xl border p-4">
-                        <div className="text-foreground mb-2 text-sm font-semibold">
-                          {hasGuestInLobby
-                            ? 'Your friend is in the lobby'
-                            : 'Waiting for a friend to join'}
-                        </div>
-                        <p className="text-muted-foreground text-sm">
-                          {hasGuestInLobby && guestParticipant
-                            ? `${guestParticipant.name} joined this room and the room is now persisted as ready.`
-                            : 'Share the invite link and wait for your friend to click Join game from another browser or device.'}
-                        </p>
-                      </div>
-
-                      <div className="border-border/40 bg-background/45 space-y-3 rounded-xl border p-4">
-                        <div className="text-foreground text-sm font-semibold">
-                          Time per turn
-                        </div>
-                        <GameModeSelector
-                          value={selectedMode}
-                          onChange={setSelectedMode}
-                        />
-                      </div>
-
                       <Button
                         type="button"
                         size="lg"
@@ -1477,7 +1361,6 @@ function PlayFriendLobbyRoom({
                         <Users size={16} />
                         {isStartingRoom ? 'Starting...' : 'Start game'}
                       </Button>
-
                       <Button
                         asChild
                         variant="outline"
@@ -1487,34 +1370,19 @@ function PlayFriendLobbyRoom({
                         <Link to={PATH.play.index}>Back to game modes</Link>
                       </Button>
                     </>
-                  ) : hasJoinedRoom ? (
-                    <div className="space-y-4">
-                      <div className="border-border/40 bg-background/45 rounded-xl border p-4">
-                        <div className="text-foreground mb-2 text-sm font-semibold">
-                          You joined the lobby
-                        </div>
-                        <p className="text-muted-foreground text-sm">
-                          {liveHostParticipant
-                            ? 'Your presence is live through Ably and your join is now stored in the multiplayer room records.'
-                            : 'You are connected. If the host opens this room, they will appear here live too.'}
-                        </p>
-                      </div>
-
-                      {!sessionName ? (
-                        <Button
-                          asChild
-                          variant="outline"
-                          size="lg"
-                          className="w-full"
-                        >
-                          <Link to={PATH.signIn}>Sign in instead</Link>
-                        </Button>
-                      ) : null}
-                    </div>
+                  ) : hasJoinedRoom && !sessionName ? (
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="lg"
+                      className="w-full"
+                    >
+                      <Link to={PATH.signIn}>Sign in instead</Link>
+                    </Button>
                   ) : null}
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
       )}

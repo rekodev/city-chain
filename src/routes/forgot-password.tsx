@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { PATH } from '#/constants/path';
+import AuthPageLayout from '@/components/AuthPageLayout';
 
 export const Route = createFileRoute('/forgot-password')({
   component: RouteComponent
@@ -37,68 +38,71 @@ function RouteComponent() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        {sent ? (
-          <div className="flex flex-col items-center gap-4 text-center">
-            <div className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-lg">
-              <Mail className="size-5" />
+    <AuthPageLayout>
+      {sent ? (
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="bg-primary/10 ring-primary/20 flex size-12 items-center justify-center rounded-2xl ring-2">
+            <Mail size={22} className="text-primary" strokeWidth={2.2} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">Check your inbox</h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              If an account exists for{' '}
+              <span className="text-foreground font-medium">{email}</span>,
+              you'll receive a reset link shortly.
+            </p>
+          </div>
+          <Link
+            to={PATH.signIn}
+            className="text-muted-foreground hover:text-primary text-sm underline underline-offset-4 transition-colors"
+          >
+            Back to sign in
+          </Link>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <div className="bg-primary/10 ring-primary/20 flex size-12 items-center justify-center rounded-2xl ring-2">
+              <Link2 size={22} className="text-primary" strokeWidth={2.2} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">Check your inbox</h1>
+              <h1 className="text-2xl font-bold">Forgot password?</h1>
               <p className="text-muted-foreground mt-1 text-sm">
-                If an account exists for{' '}
-                <span className="text-foreground font-medium">{email}</span>,
-                you'll receive a reset link shortly.
+                Enter your email and we'll send you a reset link.
               </p>
             </div>
-            <Link
-              to={PATH.signIn}
-              className="text-muted-foreground hover:text-primary text-sm underline underline-offset-4 transition-colors"
+          </div>
+
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="explorer@citygame.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              disabled={loading}
             >
-              Back to sign in
+              {loading ? 'Sending…' : 'Send Reset Link'}
+            </Button>
+          </div>
+
+          <div className="text-center text-sm">
+            Remembered it?{' '}
+            <Link to={PATH.signIn} className="underline underline-offset-4">
+              Sign in
             </Link>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            <div className="flex flex-col items-center gap-3 text-center">
-              <div className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-lg">
-                <Link2 className="size-5" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">Forgot password?</h1>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  Enter your email and we'll send you a reset link.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="explorer@citygame.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Sending…' : 'Send Reset Link'}
-              </Button>
-            </div>
-
-            <div className="text-center text-sm">
-              Remembered it?{' '}
-              <Link to={PATH.signIn} className="underline underline-offset-4">
-                Sign in
-              </Link>
-            </div>
-          </form>
-        )}
-      </div>
-    </div>
+        </form>
+      )}
+    </AuthPageLayout>
   );
 }

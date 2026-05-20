@@ -1,8 +1,12 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, useSearch } from '@tanstack/react-router';
+import { useEffect } from 'react';
 import { Bot, MonitorSmartphone, Target, Users, Globe2 } from 'lucide-react';
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
+import { toast } from 'sonner';
 
-export const Route = createFileRoute('/play/')({ component: PlayMenu });
+export const Route = createFileRoute('/play/')({
+  component: PlayMenu
+});
 
 const GEO_URL =
   'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
@@ -155,6 +159,13 @@ function ModeCard({
 }
 
 export default function PlayMenu() {
+  const search = useSearch({ strict: false }) as { verified?: string };
+
+  useEffect(() => {
+    if (search.verified === 'true')
+      toast.success('Email verified successfully!');
+  }, [search.verified]);
+
   return (
     <div className="flex min-h-screen pt-14">
       {/* Globe — hidden on mobile */}
