@@ -16,7 +16,7 @@ export default function UnverifiedEmailBanner() {
     setResending(true);
     const { error } = await authClient.sendVerificationEmail({
       email: session.user.email,
-      callbackURL: PATH.play.index
+      callbackURL: `${window.location.origin}${PATH.play.index}`
     });
     setResending(false);
 

@@ -3,11 +3,13 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { tanstackStartCookies } from 'better-auth/tanstack-start';
 import { db } from './db';
 import * as schema from './db/schema';
-import { sendVerificationEmail } from './email';
+import { sendVerificationEmail, sendResetPasswordEmail } from './email';
 
 export const auth = betterAuth({
   emailAndPassword: {
-    enabled: true
+    enabled: true,
+    sendResetPassword: sendResetPasswordEmail,
+    revokeSessionsOnPasswordReset: true
   },
   emailVerification: {
     sendVerificationEmail,

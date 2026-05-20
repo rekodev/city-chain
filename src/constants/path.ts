@@ -3,6 +3,8 @@ export const PATH = {
   signIn: '/signin',
   singUp: '/signup',
   verifyEmail: '/verify-email',
+  forgotPassword: '/forgot-password',
+  resetPassword: '/reset-password',
   play: {
     index: '/play',
     bots: '/play/bots',

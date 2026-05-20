@@ -2,7 +2,8 @@ import {
   HeadContent,
   Outlet,
   Scripts,
-  createRootRoute
+  createRootRoute,
+  useLocation
 } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '../components/ui/sonner';
@@ -18,6 +19,14 @@ import Footer from '#/components/Footer';
 import { PATH } from '#/constants/path';
 
 const queryClient = new QueryClient();
+
+const AUTH_PATHS = new Set<string>([
+  PATH.signIn,
+  PATH.singUp,
+  PATH.forgotPassword,
+  PATH.resetPassword,
+  PATH.verifyEmail
+]);
 
 function NotFound() {
   return (
@@ -51,6 +60,8 @@ export const Route = createRootRoute({
 function AppShell() {
   const { isPlaying } = useGameStatus();
   const { initialUser } = Route.useLoaderData();
+  const { pathname } = useLocation();
+  const isAuthPage = AUTH_PATHS.has(pathname);
 
   return (
     <>
@@ -60,7 +71,7 @@ function AppShell() {
       <main className="mx-auto w-full max-w-7xl">
         <Outlet />
       </main>
-      {!isPlaying && <Footer />}
+      {!isPlaying && !isAuthPage && <Footer />}
     </>
   );
 }
