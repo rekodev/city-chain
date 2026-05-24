@@ -13,6 +13,7 @@ import {
   getTurnTimeForMode,
   UNLIMITED_TIMER_SENTINEL
 } from '@/constants/gameMode';
+import { saveRoomGameHistory } from '@/server/game-history';
 
 type RoomRecord = typeof multiplayerRoom.$inferSelect;
 type RoomStateRecord = typeof multiplayerRoomState.$inferSelect;
@@ -38,6 +39,7 @@ export type MultiplayerRoomSnapshot = {
   currentTurnSlot: 0 | 1;
   version: number;
   gameOverReason: 'timeout' | 'gave_up' | 'disconnect' | 'completed' | null;
+  loserSlot: 0 | 1 | null;
   startedAt: string | null;
   endedAt: string | null;
   lastMoveAt: string | null;
@@ -75,6 +77,7 @@ function mapSnapshot(
     currentTurnSlot: state.currentTurnSlot as 0 | 1,
     version: state.version,
     gameOverReason: state.gameOverReason ?? null,
+    loserSlot: (state.loserSlot ?? null) as 0 | 1 | null,
     startedAt: serializeDate(state.startedAt),
     endedAt: serializeDate(state.endedAt),
     lastMoveAt: serializeDate(state.lastMoveAt),
@@ -200,9 +203,10 @@ async function finishRoom(
   state: RoomStateRecord,
   timers: [number, number],
   reason: 'timeout' | 'gave_up' | 'disconnect',
-  endedAt: Date
-) {
-  await tx
+  endedAt: Date,
+  loserSlot: 0 | 1
+): Promise<boolean> {
+  const updated = await tx
     .update(multiplayerRoom)
     .set({
       status: 'finished',
@@ -210,7 +214,12 @@ async function finishRoom(
       lastActivityAt: endedAt,
       updatedAt: endedAt
     })
-    .where(eq(multiplayerRoom.id, roomId));
+    .where(
+      and(eq(multiplayerRoom.id, roomId), eq(multiplayerRoom.status, 'active'))
+    )
+    .returning({ id: multiplayerRoom.id });
+
+  if (!updated.length) return false;
 
   await tx
     .update(multiplayerRoomState)
@@ -218,12 +227,15 @@ async function finishRoom(
       status: 'finished',
       timers,
       gameOverReason: reason,
+      loserSlot,
       endedAt,
       lastMoveAt: endedAt,
       version: state.version + 1,
       updatedAt: endedAt
     })
     .where(eq(multiplayerRoomState.roomId, roomId));
+
+  return true;
 }
 
 const STALE_ROOM_TIMEOUT_MS = 30 * 60 * 1000;
@@ -244,16 +256,34 @@ export async function getMultiplayerRoomSnapshot(roomId: string) {
     if (isStale) {
       const endedAt = new Date();
       const { timers } = applyElapsedToTimers(state, endedAt);
+      let wasFinished = false;
       await db.transaction(async (tx) => {
-        const [fresh] = await tx
-          .select()
-          .from(multiplayerRoom)
-          .where(eq(multiplayerRoom.id, roomId))
-          .limit(1);
-        if (fresh?.status === 'active') {
-          await finishRoom(tx, roomId, state, timers, 'disconnect', endedAt);
-        }
+        wasFinished = await finishRoom(
+          tx,
+          roomId,
+          state,
+          timers,
+          'disconnect',
+          endedAt,
+          state.currentTurnSlot as 0 | 1
+        );
       });
+
+      if (wasFinished) {
+        await saveRoomGameHistory({
+          gameType: 'friend',
+          participants: participants.map((p) => ({
+            userId: p.userId,
+            slot: p.slot,
+            displayName: p.displayName
+          })),
+          chain: state.chain,
+          gameMode: room.gameMode as GameMode,
+          loserSlot: state.currentTurnSlot,
+          gameOverReason: 'disconnect',
+          endedAt
+        }).catch(() => {});
+      }
       return getMultiplayerRoomSnapshot(roomId);
     }
   }
@@ -566,6 +596,7 @@ export async function rematchFriendRoom(
           currentTurnSlot: 0,
           version: 0,
           gameOverReason: null,
+          loserSlot: null,
           rematchRequestedBySlot: null,
           startedAt: now,
           endedAt: null,
@@ -714,7 +745,9 @@ export async function giveUpFriendRoom({
   participantKey: string;
   userId: string | null;
 }) {
-  return db.transaction(async (tx) => {
+  let historyPayload: Parameters<typeof saveRoomGameHistory>[0] | null = null;
+
+  const snapshot = await db.transaction(async (tx) => {
     const bundle = await getRoomBundle(tx, roomId);
     if (!bundle) {
       throw new Error('Room not found');
@@ -738,7 +771,31 @@ export async function giveUpFriendRoom({
     const endedAt = new Date();
     const { timers } = applyElapsedToTimers(state, endedAt);
 
-    await finishRoom(tx, roomId, state, timers, 'gave_up', endedAt);
+    const finished = await finishRoom(
+      tx,
+      roomId,
+      state,
+      timers,
+      'gave_up',
+      endedAt,
+      viewer.slot as 0 | 1
+    );
+
+    if (finished) {
+      historyPayload = {
+        gameType: 'friend',
+        participants: participants.map((p) => ({
+          userId: p.userId,
+          slot: p.slot,
+          displayName: p.displayName
+        })),
+        chain: state.chain,
+        gameMode: room.gameMode as GameMode,
+        loserSlot: viewer.slot,
+        gameOverReason: 'gave_up',
+        endedAt
+      };
+    }
 
     return mapSnapshot(
       {
@@ -753,6 +810,7 @@ export async function giveUpFriendRoom({
         status: 'finished',
         timers,
         gameOverReason: 'gave_up',
+        loserSlot: viewer.slot,
         endedAt,
         lastMoveAt: endedAt,
         version: state.version + 1,
@@ -761,10 +819,18 @@ export async function giveUpFriendRoom({
       participants
     );
   });
+
+  if (historyPayload) {
+    await saveRoomGameHistory(historyPayload).catch(() => {});
+  }
+
+  return snapshot;
 }
 
 export async function resolveFriendRoomTimeout(roomId: string) {
-  return db.transaction(async (tx) => {
+  let historyPayload: Parameters<typeof saveRoomGameHistory>[0] | null = null;
+
+  const snapshot = await db.transaction(async (tx) => {
     const bundle = await getRoomBundle(tx, roomId);
     if (!bundle) {
       throw new Error('Room not found');
@@ -782,7 +848,31 @@ export async function resolveFriendRoomTimeout(roomId: string) {
       return mapSnapshot(room, state, participants);
     }
 
-    await finishRoom(tx, roomId, state, timers, 'timeout', endedAt);
+    const finished = await finishRoom(
+      tx,
+      roomId,
+      state,
+      timers,
+      'timeout',
+      endedAt,
+      state.currentTurnSlot as 0 | 1
+    );
+
+    if (finished) {
+      historyPayload = {
+        gameType: 'friend',
+        participants: participants.map((p) => ({
+          userId: p.userId,
+          slot: p.slot,
+          displayName: p.displayName
+        })),
+        chain: state.chain,
+        gameMode: room.gameMode as GameMode,
+        loserSlot: state.currentTurnSlot,
+        gameOverReason: 'timeout',
+        endedAt
+      };
+    }
 
     return mapSnapshot(
       {
@@ -797,6 +887,7 @@ export async function resolveFriendRoomTimeout(roomId: string) {
         status: 'finished',
         timers,
         gameOverReason: 'timeout',
+        loserSlot: state.currentTurnSlot,
         endedAt,
         lastMoveAt: endedAt,
         version: state.version + 1,
@@ -805,4 +896,10 @@ export async function resolveFriendRoomTimeout(roomId: string) {
       participants
     );
   });
+
+  if (historyPayload) {
+    await saveRoomGameHistory(historyPayload).catch(() => {});
+  }
+
+  return snapshot;
 }

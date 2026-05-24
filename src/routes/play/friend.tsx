@@ -96,6 +96,7 @@ type RoomSnapshot = {
   currentTurnSlot: 0 | 1;
   version: number;
   gameOverReason: 'timeout' | 'gave_up' | 'disconnect' | 'completed' | null;
+  loserSlot: 0 | 1 | null;
   startedAt: string | null;
   endedAt: string | null;
   lastMoveAt: string | null;
@@ -585,7 +586,14 @@ function PlayFriendLobbyRoom({
 
     const interval = window.setInterval(() => {
       readRoomSnapshot(roomId)
-        .then((snapshot) => setRoomSnapshot(snapshot))
+        .then((snapshot) =>
+          setRoomSnapshot((prev) => {
+            if (prev?.viewer && !snapshot.viewer) {
+              return { ...snapshot, viewer: prev.viewer };
+            }
+            return snapshot;
+          })
+        )
         .catch(() => {});
     }, 5000);
 
@@ -759,7 +767,12 @@ function PlayFriendLobbyRoom({
     void readRoomSnapshot(roomId)
       .then((snapshot) => {
         if (!cancelled) {
-          setRoomSnapshot(snapshot);
+          setRoomSnapshot((prev) => {
+            if (prev?.viewer && !snapshot.viewer) {
+              return { ...snapshot, viewer: prev.viewer };
+            }
+            return snapshot;
+          });
         }
       })
       .catch(() => {});
@@ -775,7 +788,14 @@ function PlayFriendLobbyRoom({
     const refreshSnapshot = () => {
       void readRoomSnapshot(roomId)
         .then((snapshot) => {
-          setRoomSnapshot(snapshot);
+          setRoomSnapshot((prev) => {
+            // Don't let a stale request (e.g. fired before the join cookie was
+            // set) strip away a viewer that's already been established.
+            if (prev?.viewer && !snapshot.viewer) {
+              return { ...snapshot, viewer: prev.viewer };
+            }
+            return snapshot;
+          });
         })
         .catch(() => {});
     };
@@ -997,7 +1017,7 @@ function PlayFriendLobbyRoom({
   };
 
   const showGuestJoinScreen = !isHost && !hasJoinedRoom;
-  const loser = isGameFinished ? (roomSnapshot?.currentTurnSlot ?? null) : null;
+  const loser = isGameFinished ? (roomSnapshot?.loserSlot ?? null) : null;
 
   const rematchRequestedBySlot = roomSnapshot?.rematchRequestedBySlot ?? null;
   const iHaveRequestedRematch =

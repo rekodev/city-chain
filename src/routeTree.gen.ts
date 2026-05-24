@@ -15,6 +15,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as HistoryRouteImport } from './routes/history'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlayIndexRouteImport } from './routes/play/index'
@@ -23,6 +24,7 @@ import { Route as PlayOnlineRouteImport } from './routes/play/online'
 import { Route as PlayLocalRouteImport } from './routes/play/local'
 import { Route as PlayFriendRouteImport } from './routes/play/friend'
 import { Route as PlayBotsRouteImport } from './routes/play/bots'
+import { Route as ApiGameHistoryRouteImport } from './routes/api/game-history'
 import { Route as ApiMultiplayerRoomRouteImport } from './routes/api/multiplayer/room'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAblyTokenRouteImport } from './routes/api/ably/token'
@@ -55,6 +57,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -97,6 +104,11 @@ const PlayBotsRoute = PlayBotsRouteImport.update({
   path: '/play/bots',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGameHistoryRoute = ApiGameHistoryRouteImport.update({
+  id: '/api/game-history',
+  path: '/api/game-history',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMultiplayerRoomRoute = ApiMultiplayerRoomRouteImport.update({
   id: '/api/multiplayer/room',
   path: '/api/multiplayer/room',
@@ -116,12 +128,14 @@ const ApiAblyTokenRoute = ApiAblyTokenRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/history': typeof HistoryRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/api/game-history': typeof ApiGameHistoryRoute
   '/play/bots': typeof PlayBotsRoute
   '/play/friend': typeof PlayFriendRoute
   '/play/local': typeof PlayLocalRoute
@@ -135,12 +149,14 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/history': typeof HistoryRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/api/game-history': typeof ApiGameHistoryRoute
   '/play/bots': typeof PlayBotsRoute
   '/play/friend': typeof PlayFriendRoute
   '/play/local': typeof PlayLocalRoute
@@ -155,12 +171,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/history': typeof HistoryRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/api/game-history': typeof ApiGameHistoryRoute
   '/play/bots': typeof PlayBotsRoute
   '/play/friend': typeof PlayFriendRoute
   '/play/local': typeof PlayLocalRoute
@@ -176,12 +194,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/forgot-password'
+    | '/history'
     | '/privacy'
     | '/reset-password'
     | '/signin'
     | '/signup'
     | '/terms'
     | '/verify-email'
+    | '/api/game-history'
     | '/play/bots'
     | '/play/friend'
     | '/play/local'
@@ -195,12 +215,14 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/forgot-password'
+    | '/history'
     | '/privacy'
     | '/reset-password'
     | '/signin'
     | '/signup'
     | '/terms'
     | '/verify-email'
+    | '/api/game-history'
     | '/play/bots'
     | '/play/friend'
     | '/play/local'
@@ -214,12 +236,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/forgot-password'
+    | '/history'
     | '/privacy'
     | '/reset-password'
     | '/signin'
     | '/signup'
     | '/terms'
     | '/verify-email'
+    | '/api/game-history'
     | '/play/bots'
     | '/play/friend'
     | '/play/local'
@@ -234,12 +258,14 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  HistoryRoute: typeof HistoryRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
   TermsRoute: typeof TermsRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
+  ApiGameHistoryRoute: typeof ApiGameHistoryRoute
   PlayBotsRoute: typeof PlayBotsRoute
   PlayFriendRoute: typeof PlayFriendRoute
   PlayLocalRoute: typeof PlayLocalRoute
@@ -293,6 +319,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -351,6 +384,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayBotsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/game-history': {
+      id: '/api/game-history'
+      path: '/api/game-history'
+      fullPath: '/api/game-history'
+      preLoaderRoute: typeof ApiGameHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/multiplayer/room': {
       id: '/api/multiplayer/room'
       path: '/api/multiplayer/room'
@@ -378,12 +418,14 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  HistoryRoute: HistoryRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
   TermsRoute: TermsRoute,
   VerifyEmailRoute: VerifyEmailRoute,
+  ApiGameHistoryRoute: ApiGameHistoryRoute,
   PlayBotsRoute: PlayBotsRoute,
   PlayFriendRoute: PlayFriendRoute,
   PlayLocalRoute: PlayLocalRoute,

@@ -11,6 +11,7 @@ import {
   uniqueIndex
 } from 'drizzle-orm/pg-core';
 import { type ChainEntry, type CityData } from '../../types/city';
+import { type GameMode } from '../../constants/gameMode';
 
 type MultiplayerTimers = [number, number];
 type MultiplayerGameOverReason =
@@ -205,6 +206,7 @@ export const multiplayerRoomState = pgTable(
     endedAt: timestamp('ended_at'),
     lastMoveAt: timestamp('last_move_at'),
     rematchRequestedBySlot: integer('rematch_requested_by_slot'),
+    loserSlot: integer('loser_slot'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
       .defaultNow()
@@ -239,11 +241,46 @@ export const multiplayerMove = pgTable(
   ]
 );
 
+export const gameHistoryGameType = pgEnum('game_history_game_type', ['friend']);
+
+export const gameHistory = pgTable(
+  'game_history',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    gameType: gameHistoryGameType('game_type').notNull(),
+    gameMode: text('game_mode').$type<GameMode>(),
+    players: jsonb('players')
+      .$type<Array<{ name: string; slot: number }>>()
+      .notNull(),
+    chain: jsonb('chain').$type<ChainEntry[]>().notNull(),
+    chainLength: integer('chain_length').notNull(),
+    userSlot: integer('user_slot').notNull(),
+    loserSlot: integer('loser_slot'),
+    gameOverReason: text('game_over_reason'),
+    playedAt: timestamp('played_at').defaultNow().notNull()
+  },
+  (table) => [
+    index('game_history_userId_idx').on(table.userId),
+    index('game_history_playedAt_idx').on(table.playedAt)
+  ]
+);
+
+export const gameHistoryRelations = relations(gameHistory, ({ one }) => ({
+  user: one(user, {
+    fields: [gameHistory.userId],
+    references: [user.id]
+  })
+}));
+
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
   hostedMultiplayerRooms: many(multiplayerRoom),
-  multiplayerParticipants: many(multiplayerRoomParticipant)
+  multiplayerParticipants: many(multiplayerRoomParticipant),
+  gameHistory: many(gameHistory)
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
