@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useSearch } from '@tanstack/react-router';
 import { useEffect } from 'react';
-import { Bot, MonitorSmartphone, Target, Users, Globe2 } from 'lucide-react';
+import { Bot, Gamepad2, Globe2, MonitorSmartphone, Target, Users } from 'lucide-react';
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
 import { toast } from 'sonner';
 
@@ -176,13 +176,16 @@ export default function PlayMenu() {
       </div>
 
       {/* Mode selection */}
-      <div className="lg:border-border/30 flex w-full flex-col justify-center px-6 py-12 lg:w-115 lg:shrink-0 lg:border-x lg:px-10">
-        <h2 className="text-foreground mb-1 text-2xl font-bold">
-          Play CityChain
-        </h2>
-        <p className="text-muted-foreground mb-7 text-sm">
-          Choose a game mode to get started
-        </p>
+      <div className="lg:border-border/30 flex w-full flex-col px-6 py-12 lg:w-115 lg:shrink-0 lg:border-x lg:px-10">
+        <div className="mb-7 flex items-start gap-4">
+          <div className="bg-primary/10 ring-primary/20 mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl ring-2">
+            <Gamepad2 size={18} className="text-primary" strokeWidth={2.2} />
+          </div>
+          <div>
+            <h2 className="text-foreground text-2xl font-bold">Play CityChain</h2>
+            <p className="text-muted-foreground text-sm">Choose a game mode to get started</p>
+          </div>
+        </div>
         <div className="flex flex-col gap-3">
           {modes.map((mode) => (
             <ModeCard key={mode.id} {...mode} />

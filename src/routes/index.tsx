@@ -1,5 +1,6 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router';
 import { Gamepad2, Link2, MapPin, Timer, Trophy } from 'lucide-react';
+import Logo from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import HomeMap from '@/components/HomeMap';
 import { useRef } from 'react';
@@ -62,7 +63,7 @@ function Home() {
           <div className="bg-background/50 rounded-2xl border border-white/10 px-8 py-10 shadow-2xl backdrop-blur-md">
             <div className="mb-5 flex justify-center">
               <div className="bg-primary/10 ring-primary/20 rounded-2xl p-4 ring-2">
-                <Link2 size={44} className="text-primary" strokeWidth={2.2} />
+                <Logo size={44} />
               </div>
             </div>
             <h1 className="mb-4 text-5xl font-bold tracking-tight sm:text-6xl">
