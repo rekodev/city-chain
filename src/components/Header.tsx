@@ -1,10 +1,11 @@
 import { Link } from '@tanstack/react-router';
-import { Gamepad2, Link2 } from 'lucide-react';
+import { Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UserMenu from '@/components/UserMenu';
 import { authClient } from '@/lib/auth-client';
 import { PATH } from '#/constants/path';
 import type { User } from 'better-auth';
+import Logo from '@/components/Logo';
 
 function AuthenticatedHeader({
   name,
@@ -59,7 +60,7 @@ export default function Header({ initialUser }: { initialUser?: User | null }) {
     <header className="border-border/30 bg-background/70 fixed top-0 right-0 left-0 z-50 border-b backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2 no-underline">
-          <Link2 size={22} className="text-primary shrink-0" />
+          <Logo size={22} />
           <span className="text-foreground text-base font-bold tracking-tight">
             CityChain
           </span>

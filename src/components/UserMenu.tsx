@@ -1,5 +1,5 @@
 import { Link, useRouter } from '@tanstack/react-router';
-import { History, PowerIcon } from 'lucide-react';
+import { History, PowerIcon, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -51,6 +51,13 @@ export default function UserMenu({ name, email, image }: Props) {
         </DropdownMenuLabel>
 
         <DropdownMenuSeparator />
+
+        <DropdownMenuItem asChild className="cursor-pointer gap-2">
+          <Link to={PATH.profile}>
+            <User className="h-4 w-4" />
+            Profile
+          </Link>
+        </DropdownMenuItem>
 
         <DropdownMenuItem asChild className="cursor-pointer gap-2">
           <Link to={PATH.history}>

@@ -6,6 +6,7 @@ export const PATH = {
   forgotPassword: '/forgot-password',
   resetPassword: '/reset-password',
   history: '/history',
+  profile: '/profile',
   play: {
     index: '/play',
     bots: '/play/bots',

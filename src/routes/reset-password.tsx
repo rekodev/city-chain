@@ -1,6 +1,5 @@
 import { useState, type ChangeEvent } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { Link2 } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { PATH } from '#/constants/path';
 import AuthPageLayout from '@/components/AuthPageLayout';
+import Logo from '@/components/Logo';
 
 export const Route = createFileRoute('/reset-password')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -59,7 +59,7 @@ function RouteComponent() {
       <AuthPageLayout>
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="bg-primary/10 ring-primary/20 flex size-12 items-center justify-center rounded-2xl ring-2">
-            <Link2 size={22} className="text-primary" strokeWidth={2.2} />
+            <Logo size={22} />
           </div>
           <div>
             <h1 className="text-2xl font-bold">Invalid link</h1>
@@ -83,7 +83,7 @@ function RouteComponent() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="bg-primary/10 ring-primary/20 flex size-12 items-center justify-center rounded-2xl ring-2">
-            <Link2 size={22} className="text-primary" strokeWidth={2.2} />
+            <Logo size={22} />
           </div>
           <div>
             <h1 className="text-2xl font-bold">Set new password</h1>

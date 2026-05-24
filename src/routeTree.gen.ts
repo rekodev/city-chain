@@ -14,6 +14,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -25,6 +26,7 @@ import { Route as PlayLocalRouteImport } from './routes/play/local'
 import { Route as PlayFriendRouteImport } from './routes/play/friend'
 import { Route as PlayBotsRouteImport } from './routes/play/bots'
 import { Route as ApiGameHistoryRouteImport } from './routes/api/game-history'
+import { Route as ApiProfileStatsRouteImport } from './routes/api/profile/stats'
 import { Route as ApiMultiplayerRoomRouteImport } from './routes/api/multiplayer/room'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAblyTokenRouteImport } from './routes/api/ably/token'
@@ -52,6 +54,11 @@ const SigninRoute = SigninRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -109,6 +116,11 @@ const ApiGameHistoryRoute = ApiGameHistoryRouteImport.update({
   path: '/api/game-history',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiProfileStatsRoute = ApiProfileStatsRouteImport.update({
+  id: '/api/profile/stats',
+  path: '/api/profile/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMultiplayerRoomRoute = ApiMultiplayerRoomRouteImport.update({
   id: '/api/multiplayer/room',
   path: '/api/multiplayer/room',
@@ -130,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
@@ -145,12 +158,14 @@ export interface FileRoutesByFullPath {
   '/api/ably/token': typeof ApiAblyTokenRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/multiplayer/room': typeof ApiMultiplayerRoomRoute
+  '/api/profile/stats': typeof ApiProfileStatsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
@@ -166,6 +181,7 @@ export interface FileRoutesByTo {
   '/api/ably/token': typeof ApiAblyTokenRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/multiplayer/room': typeof ApiMultiplayerRoomRoute
+  '/api/profile/stats': typeof ApiProfileStatsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -173,6 +189,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
@@ -188,6 +205,7 @@ export interface FileRoutesById {
   '/api/ably/token': typeof ApiAblyTokenRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/multiplayer/room': typeof ApiMultiplayerRoomRoute
+  '/api/profile/stats': typeof ApiProfileStatsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -196,6 +214,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/history'
     | '/privacy'
+    | '/profile'
     | '/reset-password'
     | '/signin'
     | '/signup'
@@ -211,12 +230,14 @@ export interface FileRouteTypes {
     | '/api/ably/token'
     | '/api/auth/$'
     | '/api/multiplayer/room'
+    | '/api/profile/stats'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/forgot-password'
     | '/history'
     | '/privacy'
+    | '/profile'
     | '/reset-password'
     | '/signin'
     | '/signup'
@@ -232,12 +253,14 @@ export interface FileRouteTypes {
     | '/api/ably/token'
     | '/api/auth/$'
     | '/api/multiplayer/room'
+    | '/api/profile/stats'
   id:
     | '__root__'
     | '/'
     | '/forgot-password'
     | '/history'
     | '/privacy'
+    | '/profile'
     | '/reset-password'
     | '/signin'
     | '/signup'
@@ -253,6 +276,7 @@ export interface FileRouteTypes {
     | '/api/ably/token'
     | '/api/auth/$'
     | '/api/multiplayer/room'
+    | '/api/profile/stats'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -260,6 +284,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HistoryRoute: typeof HistoryRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
@@ -275,6 +300,7 @@ export interface RootRouteChildren {
   ApiAblyTokenRoute: typeof ApiAblyTokenRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiMultiplayerRoomRoute: typeof ApiMultiplayerRoomRoute
+  ApiProfileStatsRoute: typeof ApiProfileStatsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -312,6 +338,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -391,6 +424,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGameHistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/profile/stats': {
+      id: '/api/profile/stats'
+      path: '/api/profile/stats'
+      fullPath: '/api/profile/stats'
+      preLoaderRoute: typeof ApiProfileStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/multiplayer/room': {
       id: '/api/multiplayer/room'
       path: '/api/multiplayer/room'
@@ -420,6 +460,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   HistoryRoute: HistoryRoute,
   PrivacyRoute: PrivacyRoute,
+  ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
@@ -435,6 +476,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAblyTokenRoute: ApiAblyTokenRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiMultiplayerRoomRoute: ApiMultiplayerRoomRoute,
+  ApiProfileStatsRoute: ApiProfileStatsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

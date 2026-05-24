@@ -1,6 +1,5 @@
 import { useState, type ChangeEvent } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { Link2 } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { PATH } from '#/constants/path';
 import AuthPageLayout from '@/components/AuthPageLayout';
+import Logo from '@/components/Logo';
 
 export default function SignInForm() {
   const [email, setEmail] = useState('');
@@ -37,7 +37,7 @@ export default function SignInForm() {
       <form onSubmit={handleLogin} className="flex flex-col gap-6">
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="bg-primary/10 ring-primary/20 flex size-12 items-center justify-center rounded-2xl ring-2">
-            <Link2 size={22} className="text-primary" strokeWidth={2.2} />
+            <Logo size={22} />
           </div>
           <div>
             <h1 className="text-2xl font-bold">Welcome back</h1>
