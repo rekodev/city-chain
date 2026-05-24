@@ -237,7 +237,11 @@ export const Route = createFileRoute('/api/multiplayer/room')({
               participantKey: identity.participantKey
             });
 
-            await publishRoomEvent(roomId, 'room.joined');
+            // Fire-and-forget so the HTTP response (with set-cookie) reaches
+            // the joining client before Ably delivers the event. If the event
+            // arrives first, the joining client's cookie isn't set yet and the
+            // subsequent GET would return viewer: null.
+            void publishRoomEvent(roomId, 'room.joined');
 
             return Response.json(
               withViewer(

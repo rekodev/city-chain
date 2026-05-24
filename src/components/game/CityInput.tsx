@@ -33,7 +33,6 @@ export default function CityInput({
 
   useEffect(() => {
     inputRef.current?.focus();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setValue('');
     setError(null);
     setIsSubmitting(false);

@@ -80,7 +80,7 @@ function AppShell() {
     !bannerDismissed;
 
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <Toaster />
       {!isPlaying && <Header initialUser={initialUser} />}
       {showBanner && (
@@ -88,11 +88,11 @@ function AppShell() {
           <UnverifiedEmailBanner onDismiss={() => setBannerDismissed(true)} />
         </div>
       )}
-      <main className="mx-auto w-full max-w-7xl">
+      <main className="mx-auto w-full max-w-7xl flex-1">
         <Outlet />
       </main>
       {!isPlaying && !hideFooter && <Footer />}
-    </>
+    </div>
   );
 }
 
