@@ -34,7 +34,6 @@ import WorldMap from '@/components/game/WorldMap';
 import { useGameStatus } from '@/context/gameStatus';
 import { authClient } from '@/lib/auth-client';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { type GameOverReason } from '@/hooks/useGameState';
 import { getInitialFriendRoomSnapshot } from '@/server/friend-room';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -48,59 +47,30 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PATH } from '#/constants/path';
-import { type ChainEntry, type CityData } from '@/types/city';
+import { type CityData } from '@/types/city';
 import { type GameMode, DEFAULT_GAME_MODE } from '@/constants/gameMode';
+import {
+  type Participant,
+  type LobbyPresenceData,
+  type RoomSnapshot
+} from '@/types/room';
+import {
+  makeRoomId,
+  getInitials,
+  getParticipantFromPresence,
+  getParticipantFromSnapshot,
+  formatConnectionState,
+  getRequiredLetter,
+  getCountdownValue,
+  getDerivedTimers,
+  getPlayers,
+  mapGameOverReason
+} from '@/utils/room';
 
 type FriendSearch = {
   room?: string;
   host?: '1';
   hostName?: string;
-};
-
-type Participant = {
-  name: string;
-  subtitle: string;
-  image?: string | null;
-};
-
-type LobbyPresenceData = {
-  roomId: string;
-  role: 'host' | 'guest';
-  name: string;
-  subtitle: string;
-  image?: string | null;
-  isAuthenticated: boolean;
-};
-
-type RoomSnapshot = {
-  roomId: string;
-  roomStatus: 'waiting' | 'ready' | 'active' | 'finished' | 'abandoned';
-  gameStatus: 'waiting' | 'active' | 'finished';
-  gameMode: GameMode;
-  participants: Array<{
-    id: string;
-    role: 'host' | 'player';
-    slot: 0 | 1;
-    displayName: string;
-    isGuest: boolean;
-    isReady: boolean;
-    userId: string | null;
-  }>;
-  viewer: {
-    participantId: string;
-    role: 'host' | 'player';
-    slot: 0 | 1;
-  } | null;
-  chain: ChainEntry[];
-  timers: [number, number];
-  currentTurnSlot: 0 | 1;
-  version: number;
-  gameOverReason: 'timeout' | 'gave_up' | 'disconnect' | 'completed' | null;
-  loserSlot: 0 | 1 | null;
-  startedAt: string | null;
-  endedAt: string | null;
-  lastMoveAt: string | null;
-  rematchRequestedBySlot: 0 | 1 | null;
 };
 
 export const Route = createFileRoute('/play/friend')({
@@ -125,149 +95,6 @@ export const Route = createFileRoute('/play/friend')({
   }),
   component: PlayFriendLobby
 });
-
-function makeRoomId() {
-  const fromCrypto = globalThis.crypto
-    ?.randomUUID?.()
-    .replace(/-/g, '')
-    .slice(0, 8);
-  return (fromCrypto ?? Math.random().toString(36).slice(2, 10)).toUpperCase();
-}
-
-function getInitials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('');
-}
-
-function getParticipantFromPresence(
-  members: Array<{ clientId?: string; data?: unknown }>,
-  roomId: string,
-  role: LobbyPresenceData['role']
-): Participant | undefined {
-  for (const member of [...members].reverse()) {
-    const data = member.data;
-
-    if (!data || typeof data !== 'object') continue;
-
-    const candidate = data as Partial<LobbyPresenceData>;
-    if (
-      candidate.roomId !== roomId ||
-      candidate.role !== role ||
-      !candidate.name
-    ) {
-      continue;
-    }
-
-    return {
-      name: candidate.name,
-      subtitle:
-        candidate.subtitle ||
-        (role === 'host' ? 'Hosting this lobby' : 'Joined via invite link'),
-      image: candidate.image
-    };
-  }
-
-  return undefined;
-}
-
-function getParticipantFromSnapshot(
-  snapshot: RoomSnapshot | null,
-  slot: 0 | 1,
-  subtitle: string
-): Participant | undefined {
-  const participant = snapshot?.participants.find(
-    (entry) => entry.slot === slot
-  );
-
-  if (!participant) return undefined;
-
-  return {
-    name: participant.displayName,
-    subtitle,
-    image: undefined
-  };
-}
-
-function formatConnectionState(state: string) {
-  switch (state) {
-    case 'connected':
-      return 'Connected';
-    case 'connecting':
-      return 'Connecting';
-    case 'disconnected':
-      return 'Reconnecting';
-    default:
-      return state;
-  }
-}
-
-function getRequiredLetter(chain: ChainEntry[]) {
-  if (chain.length === 0) return null;
-  const lastCity = chain[chain.length - 1]?.city.name ?? '';
-  return lastCity
-    ? (lastCity[lastCity.length - 1]?.toUpperCase() ?? null)
-    : null;
-}
-
-function getCountdownValue(snapshot: RoomSnapshot | null, now: number) {
-  if (snapshot?.gameStatus !== 'active' || !snapshot.startedAt) return null;
-
-  const elapsed = now - new Date(snapshot.startedAt).getTime();
-  if (elapsed < 0) return 3;
-  if (elapsed < 1000) return 3;
-  if (elapsed < 2000) return 2;
-  if (elapsed < 3000) return 1;
-  if (elapsed < 3700) return 0;
-  return null;
-}
-
-function getDerivedTimers(
-  snapshot: RoomSnapshot | null,
-  now: number
-): [number, number] {
-  if (!snapshot) return [60, 60];
-
-  const timers: [number, number] = [...snapshot.timers];
-  if (snapshot.gameStatus !== 'active' || !snapshot.lastMoveAt) return timers;
-
-  const activeTimer = timers[snapshot.currentTurnSlot];
-  if (activeTimer < 0) return timers;
-
-  const elapsedSeconds = Math.max(
-    0,
-    (now - new Date(snapshot.lastMoveAt).getTime()) / 1000
-  );
-
-  timers[snapshot.currentTurnSlot] = Math.max(
-    0,
-    Number((activeTimer - elapsedSeconds).toFixed(1))
-  );
-
-  return timers;
-}
-
-function getPlayers(snapshot: RoomSnapshot | null): [string, string] {
-  const host = snapshot?.participants.find(
-    (participant) => participant.slot === 0
-  );
-  const guest = snapshot?.participants.find(
-    (participant) => participant.slot === 1
-  );
-
-  return [host?.displayName || 'Player 1', guest?.displayName || 'Player 2'];
-}
-
-function mapGameOverReason(
-  reason: RoomSnapshot['gameOverReason']
-): GameOverReason | null {
-  if (reason === 'timeout') return 'timeout';
-  if (reason === 'gave_up') return 'gaveUp';
-  return null;
-}
 
 async function readRoomSnapshot(roomId: string) {
   const response = await fetch(
@@ -1002,20 +829,6 @@ function PlayFriendLobbyRoom({
     navigate({ to: PATH.play.index });
   };
 
-  const handleRematch = async () => {
-    setIsRematching(true);
-    try {
-      const snapshot = await writeRoomAction({ action: 'rematch', roomId });
-      timeoutResolutionVersionRef.current = null;
-      timeoutResolutionAttemptedRef.current = null;
-      setRoomSnapshot(snapshot);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Rematch failed');
-    } finally {
-      setIsRematching(false);
-    }
-  };
-
   const showGuestJoinScreen = !isHost && !hasJoinedRoom;
   const loser = isGameFinished ? (roomSnapshot?.loserSlot ?? null) : null;
 
@@ -1031,6 +844,26 @@ function PlayFriendLobbyRoom({
     : opponentRequestedRematch
       ? 'Accept Rematch'
       : 'Rematch';
+
+  const handleRematch = async () => {
+    if (isRematching || iHaveRequestedRematch) return;
+    setIsRematching(true);
+    try {
+      const snapshot = await writeRoomAction({ action: 'rematch', roomId });
+      timeoutResolutionVersionRef.current = null;
+      timeoutResolutionAttemptedRef.current = null;
+      setRoomSnapshot((prev) => {
+        if (prev?.viewer && !snapshot.viewer) {
+          return { ...snapshot, viewer: prev.viewer };
+        }
+        return snapshot;
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Rematch failed');
+    } finally {
+      setIsRematching(false);
+    }
+  };
 
   return (
     <div className="min-h-screen overflow-hidden">

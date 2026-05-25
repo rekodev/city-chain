@@ -31,7 +31,11 @@ export default function PlayerCard({
       }
       className={cn(
         'rounded-xl border px-5 py-3 backdrop-blur-md',
-        isActive ? 'border-ring bg-card/80' : 'border-border/50 bg-card/50'
+        isLow && isActive
+          ? 'border-destructive/70 bg-card/80'
+          : isActive
+            ? 'border-ring bg-card/80'
+            : 'border-border/50 bg-card/50'
       )}
     >
       <div
