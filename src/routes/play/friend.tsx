@@ -12,7 +12,6 @@ import {
   CircleDot,
   Copy,
   Crown,
-  Flag,
   Loader2,
   UserRound,
   Users
@@ -541,7 +540,6 @@ function PlayFriendLobbyRoom({
 
     const bootstrapRoom = async () => {
       if (initialRoomSnapshot) return;
-
       if (isHost) {
         setIsBootstrappingRoom(true);
 
@@ -933,27 +931,16 @@ function PlayFriendLobbyRoom({
                 requiredLetter={requiredLetter}
                 onSubmit={handleSubmitCity}
                 currentPlayer={roomSnapshot?.currentTurnSlot ?? 0}
-                playerName={players[roomSnapshot?.currentTurnSlot ?? 0]}
                 disabled={!showLiveInput}
                 disabledPlaceholder={
                   viewerSlot === null
                     ? 'Spectating active room'
                     : `Waiting for ${players[roomSnapshot?.currentTurnSlot ?? 0]}'s move...`
                 }
+                onQuit={viewerSlot !== null ? handleGiveUp : undefined}
+                quitLabel={isGivingUp ? 'Giving up...' : 'Give Up'}
+                quitDisabled={isGivingUp || isSubmittingMove}
               />
-
-              <div className="fixed bottom-4 left-1/2 z-20 -translate-x-1/2">
-                <button
-                  onClick={handleGiveUp}
-                  disabled={
-                    isGivingUp || viewerSlot === null || isSubmittingMove
-                  }
-                  className="border-border/40 bg-card/70 text-muted-foreground hover:border-destructive/60 hover:text-destructive flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-semibold backdrop-blur-md transition-colors disabled:opacity-50"
-                >
-                  <Flag size={14} />
-                  {isGivingUp ? 'Giving up...' : 'Give Up'}
-                </button>
-              </div>
             </>
           ) : null}
 

@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Flag } from 'lucide-react';
 import { useGameState } from '@/hooks/useGameState';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { useGameStatus } from '@/context/gameStatus';
@@ -156,18 +155,8 @@ function LocalGame() {
             requiredLetter={getRequiredLetter()}
             onSubmit={submitCity}
             currentPlayer={state.currentPlayer}
-            playerName={state.players[state.currentPlayer]}
+            onQuit={giveUp}
           />
-
-          <div className="fixed bottom-4 left-1/2 z-20 -translate-x-1/2">
-            <button
-              onClick={giveUp}
-              className="border-border/40 bg-card/70 text-muted-foreground hover:border-destructive/60 hover:text-destructive flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-semibold backdrop-blur-md transition-colors"
-            >
-              <Flag size={14} />
-              Give Up
-            </button>
-          </div>
         </>
       )}
 

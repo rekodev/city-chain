@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Flag, Target } from 'lucide-react';
+import { Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import { usePracticeState } from '@/hooks/usePracticeState';
@@ -184,18 +184,9 @@ function PracticeGame() {
             requiredLetter={getRequiredLetter()}
             onSubmit={submitCity}
             currentPlayer={0}
-            playerName="Practice"
+            onQuit={handleQuit}
+            quitLabel="Quit"
           />
-
-          <div className="fixed bottom-6 left-1/2 z-20 -translate-x-1/2">
-            <button
-              onClick={handleQuit}
-              className="border-border/40 bg-card/70 text-muted-foreground hover:border-destructive/60 hover:text-destructive flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-semibold backdrop-blur-md transition-colors"
-            >
-              <Flag size={14} />
-              Quit
-            </button>
-          </div>
         </>
       )}
     </div>

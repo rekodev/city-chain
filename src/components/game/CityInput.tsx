@@ -1,26 +1,31 @@
 import { useState, useRef, useEffect, type ChangeEvent } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import { ArrowRight, Flag, Loader2 } from 'lucide-react';
 import { type CityData } from '@/types/city';
 import { useGetCity } from '@/hooks/useGetCity';
 import { useDebounce } from '@/hooks/useDebounce';
+import { Button } from '@/components/ui/button';
 
 type Props = {
   requiredLetter: string | null;
   onSubmit: (city: CityData) => string | null | Promise<string | null>;
   currentPlayer: 0 | 1;
-  playerName: string;
   disabled?: boolean;
   disabledPlaceholder?: string;
+  onQuit?: () => void;
+  quitLabel?: string;
+  quitDisabled?: boolean;
 };
 
 export default function CityInput({
   requiredLetter,
   onSubmit,
   currentPlayer,
-  playerName,
   disabled = false,
-  disabledPlaceholder
+  disabledPlaceholder,
+  onQuit,
+  quitLabel = 'Give Up',
+  quitDisabled = false
 }: Props) {
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +36,9 @@ export default function CityInput({
   const { data: cityResult, isFetching } = useGetCity(debouncedValue);
   const isLoading = isFetching || value !== debouncedValue;
 
+  const playerColor =
+    currentPlayer === 0 ? 'var(--primary)' : 'var(--secondary)';
+
   useEffect(() => {
     inputRef.current?.focus();
     setValue('');
@@ -40,7 +48,7 @@ export default function CityInput({
 
   const handleSubmit = async (event: ChangeEvent) => {
     event.preventDefault();
-    if (!value.trim() || isLoading || isSubmitting) return;
+    if (!value.trim() || isLoading || isSubmitting || disabled) return;
 
     if (!cityResult) {
       setError('Unrecognized city');
@@ -64,50 +72,94 @@ export default function CityInput({
     }
   };
 
+  const placeholder =
+    disabled && disabledPlaceholder
+      ? disabledPlaceholder
+      : requiredLetter
+        ? `e.g. ${requiredLetter}...`
+        : 'Name any city to start...';
+
   return (
-    <div className="fixed bottom-20 left-1/2 z-20 w-full max-w-lg -translate-x-1/2 px-4">
-      <form onSubmit={handleSubmit} className="relative">
-        <div className="bg-card/80 border-border flex items-center gap-3 rounded-2xl border px-4 py-3 backdrop-blur-md">
-          {requiredLetter && (
-            <div
-              className={`font-mono text-3xl font-bold ${currentPlayer === 0 ? 'text-primary glow-amber-text' : 'text-secondary glow-cyan-text'}`}
+    <div className="fixed bottom-16 left-1/2 z-20 w-full max-w-xl -translate-x-1/2 px-4">
+      <div className="mb-2 flex items-center justify-between pl-1">
+        {requiredLetter ? (
+          <div className="flex items-center gap-2.5">
+            <span className="text-muted-foreground text-xs font-semibold tracking-[0.14em] uppercase">
+              Next city starts with
+            </span>
+            <span
+              aria-label={`Letter ${requiredLetter}`}
+              className="grid h-8 w-8 place-items-center rounded-lg text-sm font-extrabold"
+              style={{
+                color: playerColor,
+                background: `color-mix(in oklab, ${playerColor} 22%, transparent)`,
+                boxShadow: `inset 0 0 0 1.5px color-mix(in oklab, ${playerColor} 40%, transparent)`
+              }}
             >
-              →&nbsp;{requiredLetter}
-            </div>
-          )}
-          <input
-            ref={inputRef}
-            type="text"
-            value={disabled ? '' : value}
-            onChange={(e) => {
-              if (!disabled) setValue(e.target.value);
-            }}
-            placeholder={
-              disabled && disabledPlaceholder
-                ? disabledPlaceholder
-                : requiredLetter
-                  ? `City starting with ${requiredLetter}...`
-                  : 'Name any city to start...'
-            }
-            disabled={disabled}
-            className="text-foreground placeholder:text-muted-foreground flex-1 bg-transparent text-lg font-medium outline-none disabled:cursor-not-allowed"
-            autoComplete="off"
-          />
-          <button
+              {requiredLetter}
+            </span>
+          </div>
+        ) : (
+          <div />
+        )}
+
+        {onQuit && (
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={onQuit}
+            disabled={quitDisabled}
+          >
+            <Flag />
+            {quitLabel}
+          </Button>
+        )}
+      </div>
+
+      <form onSubmit={handleSubmit} className="relative">
+        <div
+          className="flex items-center gap-2 rounded-2xl p-2"
+          style={{
+            background: 'var(--card)',
+            border: '1px solid var(--border)',
+            boxShadow:
+              '0 1px 0 0 oklch(1 0 0 / 0.04) inset, 0 12px 30px -16px oklch(0 0 0 / 0.6)'
+          }}
+        >
+          <div className="flex flex-1 items-center gap-3 px-3">
+            <ArrowRight
+              className="text-muted-foreground h-4 w-4 shrink-0"
+              aria-hidden
+            />
+            <input
+              ref={inputRef}
+              type="text"
+              value={disabled ? '' : value}
+              onChange={(e) => {
+                if (!disabled) setValue(e.target.value);
+              }}
+              placeholder={placeholder}
+              disabled={disabled}
+              autoComplete="off"
+              className="text-foreground placeholder:text-muted-foreground/60 w-full bg-transparent py-2.5 text-base focus:outline-none disabled:cursor-not-allowed"
+            />
+          </div>
+          <Button
             type="submit"
-            disabled={disabled || isLoading || isSubmitting}
-            className={`min-h-9 rounded-xl px-4 py-2 text-sm font-semibold transition-all disabled:opacity-50 ${
-              currentPlayer === 0
-                ? 'bg-primary text-primary-foreground hover:opacity-90'
-                : 'bg-secondary text-secondary-foreground hover:opacity-90'
-            }`}
+            variant={currentPlayer === 0 ? 'default' : 'secondary'}
+            size="lg"
+            disabled={disabled || !value.trim() || isLoading || isSubmitting}
+            className="min-h-full min-w-20 rounded-xl px-4"
           >
             {isLoading || isSubmitting ? (
-              <Loader2 size={16} className="animate-spin" />
+              <Loader2 className="animate-spin" />
             ) : (
-              'Go'
+              <>
+                Go
+                <ArrowRight />
+              </>
             )}
-          </button>
+          </Button>
         </div>
         {error && (
           <motion.div
@@ -119,10 +171,15 @@ export default function CityInput({
           </motion.div>
         )}
       </form>
-      {playerName !== 'Practice' && (
-        <div className="text-muted-foreground mt-2 text-center text-xs">
-          {playerName}'s turn
-        </div>
+
+      {requiredLetter && (
+        <p className="text-muted-foreground mt-2 pl-1 text-xs">
+          Type the full city name, including the{' '}
+          <span className="text-foreground font-semibold">
+            {requiredLetter}
+          </span>
+          .
+        </p>
       )}
     </div>
   );
